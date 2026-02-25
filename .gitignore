@@ -1,18 +1,1 @@
-venv/
-backend/venv/
-node_modules/
-__pycache__/
-.env
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Virtual Environment
-venv/
-backend/venv/
-
-# VSCode
-.vscode/
+    backend/venv/
