@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+// Allow overriding API base URL via Vite env var `VITE_API_URL`.
+// Example: set VITE_API_URL=https://api.example.com in Vercel env.
+const resolvedBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : ''
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: resolvedBase || '/api',
   timeout: 60000, // 60s for ML inference
 })
 
