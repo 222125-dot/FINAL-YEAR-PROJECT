@@ -1,1 +1,29 @@
-    backend/venv/
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.db
+.env
+*.pt
+
+# virtual environments
+backend/.venv/
+
+# Node artifacts
+frontend/node_modules/
+frontend/dist/
+
+# Vite cache
+frontend/.vite/
+
+# logs and temporary files
+*.log
+
+# IDE
+.vscode/
+
+# uploads and generated 3D models
+backend/uploads/
+backend/static/output/
+
+# ignore local config
+*.local
