@@ -2,19 +2,12 @@
   "version": 2,
   "builds": [
     {
-      // use the root package.json which contains a helpful script that
-      // moves into the frontend folder, installs deps, and runs the
-      // actual Vite build. This makes the project easier to work with
-      // locally and avoids needing to configure the dashboard.
       "src": "package.json",
       "use": "@vercel/static-build",
-      // since the real output lives in frontend/dist, we tell the
-      // builder to treat that as the static files directory
       "config": { "distDir": "frontend/dist" }
     }
   ],
   "routes": [
-    // ensure every request for our SPA returns the generated index.html
-    { "src": "/(.*)", "dest": "/frontend/dist/index.html" }
+    { "src": "\\/(.*)", "dest": "\/frontend\/dist\/index.html" }
   ]
 }
