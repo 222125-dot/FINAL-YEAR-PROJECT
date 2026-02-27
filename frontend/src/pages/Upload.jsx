@@ -72,7 +72,7 @@ export default function Upload() {
   return (
     <div className="page-content">
       <div className="section-wrap">
-        <h2 style={{ marginBottom:'.4rem' }}>Upload Kidney Scan</h2>
+        <h2 style={{ marginBottom:'.4rem' }}>Upload {organ} Scan</h2>
         <p style={{ color:'var(--muted)', fontSize:'.88rem', marginBottom:'2rem' }}>
           Upload your kidney scan — YOLO AI detects conditions and maps them to the 3D kidney mesh.
         </p>
@@ -104,10 +104,10 @@ export default function Upload() {
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize:'2.5rem' }}>🫁</div>
+                  <div style={{ fontSize:'2.5rem' }}>{organ === 'Brain' ? '🧠' : '🫁'}</div>
                   <div style={{ fontSize:'1rem', fontWeight:500 }}>Drop scan or click to browse</div>
                   <div style={{ fontSize:'.8rem', color:'var(--muted)' }}>PNG, JPG, TIFF, DICOM</div>
-                  <div style={{ fontSize:'.7rem', color:'var(--warn)', marginTop:'.3rem' }}>⚠️ Kidney scans only</div>
+                  <div style={{ fontSize:'.7rem', color:'var(--warn)', marginTop:'.3rem' }}>⚠️ {organ} scans only</div>
                 </>
               )}
             </div>
@@ -118,8 +118,8 @@ export default function Upload() {
               <div className="form-group">
                 <label>Organ / Region</label>
                 <select value={organ} onChange={e=>setOrgan(e.target.value)}>
-                  <option>Kidney</option><option>Liver</option>
-                  <option>Brain</option><option>Lung</option><option>Heart</option>
+                  <option>Kidney</option>
+                  <option>Brain</option>
                 </select>
               </div>
               <div className="form-group">
@@ -209,7 +209,7 @@ export default function Upload() {
                       onClick={() => {
                         const link = document.createElement('a');
                         link.href = result.model_3d_url;
-                        link.download = `kidney_analysis_${result.scan_id}.glb`;
+                        link.download = `${(result.organ||organ).toLowerCase()}_analysis_${result.scan_id}.glb`;
                         link.click();
                       }}>
                       <div style={{
@@ -251,9 +251,9 @@ export default function Upload() {
                 src={
                   result?.model_3d_url
                     ? result.model_3d_url
-                    : null
+                    : result?.organ_base_url || null
                 }
-                alt="Analyzed Kidney 3D Model"
+                alt={`Analyzed ${result?.organ || organ} 3D Model`}
               />
 
               {/* Overlay labels on 3D model */}

@@ -10,8 +10,10 @@ export default function ModelViewer({ src, alt = '3D Model', style = {}, showCon
   useEffect(() => {
     // model-viewer is a web component — loaded via CDN in index.html
     if (ref.current && src) {
+      // If src starts with /, prepend the backend URL
+      const fullSrc = src.startsWith('/') ? `http://localhost:8000${src}` : src
       // Force reload when src changes
-      ref.current.src = src
+      ref.current.src = fullSrc
     }
   }, [src])
 

@@ -26,7 +26,8 @@ SECRET_KEY   = os.getenv("SECRET_KEY", "visio3d-super-secret-key-2025-change-me"
 ALGORITHM    = "HS256"
 EXPIRE_HOURS = 24 * 7
 
-pwd_ctx       = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use pbkdf2_sha256 instead of bcrypt - no 72 byte limitation
+pwd_ctx       = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
@@ -64,18 +65,6 @@ def get_current_user(
     token: str     = Depends(oauth2_scheme),
     db:    Session = Depends(get_db)
 ) -> User:
-    if token == "demo-token":
-        # For demo, return dummy user
-        dummy = User(
-            id=1,
-            username="demo",
-            email="demo@example.com",
-            password="dummy",
-            full_name="Demo User",
-            plan="free",
-            created_at=datetime.utcnow()
-        )
-        return dummy
     try:
         payload  = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
@@ -107,7 +96,7 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
         user = User(
             username=req.username.strip(),
             email=req.email.lower().strip(),
-            password=hash_pw(req.password[:72]),  # Truncate to 72 bytes for bcrypt
+            password=hash_pw(req.password),  # hash_pw will handle truncation
             full_name=req.full_name.strip() if req.full_name else req.username.strip(),
             plan="free",
             created_at=datetime.utcnow(),

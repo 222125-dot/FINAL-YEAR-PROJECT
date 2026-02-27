@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './utils/AuthContext'
+import { AuthProvider, useAuth } from './utils/AuthContext'
 import { ToastProvider } from './utils/ToastContext'
 
 import Navbar from './components/Navbar'
@@ -12,6 +12,14 @@ import Insights from './pages/Insights'
 import TextTo3D from './pages/TextTo3D'
 import Compare from './pages/Compare'
 import Pricing from './pages/Pricing'
+import Login from './pages/Login'
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div>Loading...</div>
+  if (!user) return <Navigate to="/login" replace />
+  return children
+}
 
 function AppLayout() {
   useEffect(() => {
@@ -24,13 +32,13 @@ function AppLayout() {
       <TopBanner />
       <Navbar />
       <Routes>
-        <Route path="/"         element={<Home />} />
-        <Route path="/upload"   element={<Upload />} />
-        <Route path="/reports"  element={<Reports />} />
-        <Route path="/insights" element={<Insights />} />
-        <Route path="/text3d"   element={<TextTo3D />} />
-        <Route path="/compare"  element={<Compare />} />
-        <Route path="/pricing"  element={<Pricing />} />
+        <Route path="/"         element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/upload"   element={<ProtectedRoute><Upload /></ProtectedRoute>} />
+        <Route path="/reports"  element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+        <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+        <Route path="/text3d"   element={<ProtectedRoute><TextTo3D /></ProtectedRoute>} />
+        <Route path="/compare"  element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+        <Route path="/pricing"  element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
         <Route path="*"         element={<Navigate to="/" replace />} />
       </Routes>
     </>
@@ -42,7 +50,10 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
-          <AppLayout />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={<AppLayout />} />
+          </Routes>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

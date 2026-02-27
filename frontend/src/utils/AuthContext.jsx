@@ -8,19 +8,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // For demo, always logged in
-    const dummyUser = {
-      id: 1,
-      username: 'demo',
-      email: 'demo@example.com',
-      full_name: 'Demo User',
-      plan: 'free',
-      created_at: new Date().toISOString()
+    // Check if user is already logged in
+    const token = localStorage.getItem('v3d_token')
+    const userData = localStorage.getItem('v3d_user')
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData)
+        setUser(user)
+      } catch (e) {
+        // Invalid data, clear
+        localStorage.removeItem('v3d_token')
+        localStorage.removeItem('v3d_user')
+      }
     }
-    const dummyToken = 'demo-token'
-    localStorage.setItem('v3d_token', dummyToken)
-    localStorage.setItem('v3d_user', JSON.stringify(dummyUser))
-    setUser(dummyUser)
     setLoading(false)
   }, [])
 

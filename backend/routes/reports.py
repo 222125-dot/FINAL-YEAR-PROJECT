@@ -26,6 +26,8 @@ def report_dict(r: Report) -> dict:
         "analysis_time": r.analysis_time,
         "model_3d_url": r.model_3d_url,
         "recommendations": r.recommendations or [],
+        # Provide an organ icon for frontend display (not stored separately)
+        "organ_icon": "🫁",
     }
 
 

@@ -109,7 +109,7 @@ export default function Reports() {
                             fontSize:'1.3rem',
                           }}
                           title="Preview 3D model"
-                        >🫁</div>
+                        >{r.organ_icon || '🫁'}</div>
                       </td>
                       <td><strong style={{ fontSize:'.82rem' }}>{r.scan_id || 'N/A'}</strong></td>
                       <td style={{ color:'var(--muted)' }}>

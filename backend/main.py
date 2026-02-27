@@ -44,6 +44,13 @@ for src_name in ["kidney.glb", "human_base_mesh_male.glb"]:
         shutil.copy(src, dst)
         print(f"📦 Copied {src_name} to static/")
 
+# Also copy brain model if it's available in the frontend public folder
+brain_src_frontend = os.path.normpath(os.path.join("..", "frontend", "public", "brain.glb"))
+brain_dst = os.path.join("static", "brain.glb")
+if os.path.exists(brain_src_frontend) and not os.path.exists(brain_dst):
+    shutil.copy(brain_src_frontend, brain_dst)
+    print("📦 Copied brain.glb to static/")
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ─── ROUTES ───────────────────────────────────────────────────────────────────
@@ -70,6 +77,11 @@ def startup():
     except Exception as e:
         print(f"⚠️ DB init error: {e}")
         print("Make sure PostgreSQL is running and DATABASE_URL is correct in .env")
+    
+    # Preload YOLO models on startup
+    from routes.analyze import get_yolo
+    get_yolo("Kidney")
+    get_yolo("Brain")
 
 
 if __name__ == "__main__":

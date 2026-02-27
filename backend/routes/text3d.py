@@ -106,7 +106,7 @@ def generate(req: T3DRequest, current_user: User = Depends(get_current_user)):
         raise HTTPException(500, "No matching 3D model found")
     
     return {
-        "model_url": f"/static/output/{glb}",
+        "model_url": f"http://localhost:8000/static/output/{glb}",
         "description": model_data["description"],
         "organ_type": model_data["organ_type"],
         "anomalies": model_data["anomalies"],
