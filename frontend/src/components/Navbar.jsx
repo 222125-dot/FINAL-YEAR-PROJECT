@@ -41,7 +41,7 @@ export default function Navbar() {
       borderBottom: '1px solid var(--border)',
       zIndex: 100, padding: '0 2rem', height: 60,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    }}>
+    }} role="navigation" aria-label="Main navigation">
       {/* Logo */}
       <NavLink to="/" style={{ textDecoration:'none' }}>
         <span style={{

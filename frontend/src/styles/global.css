@@ -161,6 +161,36 @@ tr:hover td { background: rgba(0,255,136,.03); }
 .result-row:last-child { border-bottom: none; }
 .result-label { color: var(--muted); }
 
+/* ── USABILITY: Focus styles for keyboard navigation (accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--g1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--g1);
+  outline-offset: 2px;
+}
+
+/* ── USABILITY: Skip to main content link (accessibility) ── */
+.skip-link {
+  position: absolute; top: -40px; left: 0;
+  background: var(--g1); color: #020c06;
+  padding: .5rem 1rem; z-index: 10000;
+  font-weight: 700; font-size: .85rem;
+  transition: top .2s;
+}
+.skip-link:focus { top: 0; }
+
+/* ── USABILITY: Reduced motion (accessibility) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── Animations ── */
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.5)} }
 @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
@@ -212,6 +242,10 @@ model-viewer {
 }
 .toast.warn  { border-color: var(--warn); }
 .toast.error { border-color: var(--danger); }
+
+/* ── PERFORMANCE: Optimize rendering for heavy 3D content ── */
+.page-content { will-change: auto; contain: layout style; }
+model-viewer { contain: layout style paint; }
 
 /* ── Responsive ── */
 @media(max-width: 900px) {

@@ -15,16 +15,34 @@ api.interceptors.request.use(cfg => {
   return cfg
 })
 
-// Auto-logout on 401
+// RELIABILITY: Auto-retry on network failure (max 2 retries with exponential backoff)
 api.interceptors.response.use(
   res => res,
-  err => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('v3d_token')
-      localStorage.removeItem('v3d_user')
-      window.location.href = '/login'
+  async err => {
+    const config = err.config
+    // Only retry on network errors or 5xx, not on 4xx client errors
+    if (!config || config._retryCount >= 2) {
+      // Auto-logout on 401
+      if (err.response?.status === 401) {
+        localStorage.removeItem('v3d_token')
+        localStorage.removeItem('v3d_user')
+        window.location.href = '/login'
+      }
+      return Promise.reject(err)
     }
-    return Promise.reject(err)
+    const isRetryable = !err.response || (err.response.status >= 500 && err.response.status !== 501)
+    if (!isRetryable) {
+      if (err.response?.status === 401) {
+        localStorage.removeItem('v3d_token')
+        localStorage.removeItem('v3d_user')
+        window.location.href = '/login'
+      }
+      return Promise.reject(err)
+    }
+    config._retryCount = (config._retryCount || 0) + 1
+    const delay = config._retryCount * 1000 // 1s, 2s
+    await new Promise(r => setTimeout(r, delay))
+    return api(config)
   }
 )
 

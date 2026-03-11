@@ -20,6 +20,11 @@ from database import get_db, User
 
 load_dotenv()
 
+import logging
+logger = logging.getLogger("visio3d")
+
+import re
+
 router = APIRouter()
 
 SECRET_KEY   = os.getenv("SECRET_KEY", "visio3d-super-secret-key-2025-change-me")
@@ -80,10 +85,15 @@ def get_current_user(
 
 @router.post("/signup")
 def signup(req: SignupRequest, db: Session = Depends(get_db)):
-    print(f"Signup attempt: {req.username}, {req.email}")
+    logger.info(f"Signup attempt: {req.username}, {req.email}")
     try:
+        # SECURITY: Input sanitization — only allow safe characters
+        if not re.match(r'^[a-zA-Z0-9_.-]+$', req.username.strip()):
+            raise HTTPException(400, "Username can only contain letters, numbers, dots, hyphens and underscores")
         if len(req.username.strip()) < 3:
             raise HTTPException(400, "Username must be at least 3 characters")
+        if len(req.username.strip()) > 30:
+            raise HTTPException(400, "Username too long (max 30 characters)")
         if len(req.password) < 4:
             raise HTTPException(400, "Password too short (min 4)")
         if "@" not in req.email:
@@ -105,12 +115,14 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
         db.add(user)
         db.commit()
         db.refresh(user)
-        print(f"User created: {user.id}")
+        logger.info(f"User created: {user.id}")
         return {"access_token": make_token(user.username), "token_type": "bearer", "user": user_dict(user)}
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error in signup: {e}")
+        logger.error(f"Error in signup: {e}")
         db.rollback()
-        raise HTTPException(500, str(e))
+        raise HTTPException(500, "Registration failed. Please try again.")
 
 
 @router.post("/login")

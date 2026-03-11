@@ -36,6 +36,7 @@ export default function Login() {
     if (form.username.trim().length < 3) { setErr('Username must be at least 3 characters'); return }
     if (!form.email.trim() || !form.email.includes('@')) { setErr('Valid email is required'); return }
     if (!form.password || form.password.length < 4) { setErr('Password must be at least 4 characters'); return }
+    if (!/[A-Za-z]/.test(form.password) || !/[0-9]/.test(form.password)) { setErr('Password must contain both letters and numbers'); return }
     setBusy(true)
     try {
       await signup({
@@ -103,12 +104,14 @@ export default function Login() {
             <div className="form-group">
               <label>Username</label>
               <input value={form.username} onChange={e=>set('username',e.target.value)}
-                placeholder="your_username" onKeyDown={e=>e.key==='Enter'&&doLogin()} autoFocus/>
+                placeholder="your_username" onKeyDown={e=>e.key==='Enter'&&doLogin()} autoFocus
+                aria-label="Username" aria-required="true" autoComplete="username"/>
             </div>
             <div className="form-group">
               <label>Password</label>
               <input type="password" value={form.password} onChange={e=>set('password',e.target.value)}
-                placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&doLogin()}/>
+                placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&doLogin()}
+                aria-label="Password" aria-required="true" autoComplete="current-password"/>
             </div>
             <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',marginTop:'.5rem'}}
               onClick={doLogin} disabled={busy}>
@@ -123,20 +126,24 @@ export default function Login() {
           <div className="fade-in">
             <div className="form-group">
               <label>Full Name</label>
-              <input value={form.full_name} onChange={e=>set('full_name',e.target.value)} placeholder="Dr. Ahmed Khan" autoFocus/>
+              <input value={form.full_name} onChange={e=>set('full_name',e.target.value)} placeholder="Dr. Ahmed Khan" autoFocus
+                aria-label="Full Name" aria-required="true" autoComplete="name"/>
             </div>
             <div className="form-group">
               <label>Username</label>
-              <input value={form.username} onChange={e=>set('username',e.target.value)} placeholder="dr_ahmed (min 3 chars)"/>
+              <input value={form.username} onChange={e=>set('username',e.target.value)} placeholder="dr_ahmed (min 3 chars)"
+                aria-label="Username" aria-required="true" autoComplete="username"/>
             </div>
             <div className="form-group">
               <label>Email</label>
-              <input type="email" value={form.email} onChange={e=>set('email',e.target.value)} placeholder="doctor@hospital.com"/>
+              <input type="email" value={form.email} onChange={e=>set('email',e.target.value)} placeholder="doctor@hospital.com"
+                aria-label="Email" aria-required="true" autoComplete="email"/>
             </div>
             <div className="form-group">
               <label>Password</label>
               <input type="password" value={form.password} onChange={e=>set('password',e.target.value)}
-                placeholder="Min 4 characters" onKeyDown={e=>e.key==='Enter'&&doSignup()}/>
+                placeholder="Min 4 chars, letters + numbers" onKeyDown={e=>e.key==='Enter'&&doSignup()}
+                aria-label="Password" aria-required="true" autoComplete="new-password"/>
             </div>
             <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',marginTop:'.5rem'}}
               onClick={doSignup} disabled={busy}>
