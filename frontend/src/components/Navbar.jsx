@@ -16,7 +16,10 @@ export default function Navbar() {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
-  const doLogout = () => { logout(); navigate('/login') }
+  const doLogout = () => { 
+    logout()
+    navigate('/login') 
+  }
 
   const linkStyle = ({ isActive }) => ({
     padding: '.4rem .9rem',
@@ -76,18 +79,32 @@ export default function Navbar() {
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
-        <div style={{
-          width:32, height:32, borderRadius:'50%',
-          background: 'linear-gradient(135deg,var(--g3),var(--g2))',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          fontFamily:"'Syne',sans-serif", fontSize:'.8rem', fontWeight:700,
-          color:'#020c06', cursor:'pointer',
-        }} title={user?.username}>
-          {(user?.full_name || user?.username || 'U').charAt(0).toUpperCase()}
-        </div>
-        <button className="btn btn-outline" style={{ padding:'.35rem .8rem', fontSize:'.78rem' }} onClick={doLogout}>
-          Logout
-        </button>
+        
+        {/* Logout Button */}
+        {user && (
+          <button 
+            onClick={doLogout}
+            style={{
+              padding: '.5rem 1.2rem',
+              background: 'rgba(0,255,136,0.1)',
+              color: 'var(--g1)',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              fontSize: '.82rem', fontWeight: 500,
+              cursor: 'pointer', transition: 'all .2s',
+            }}
+            onMouseOver={e => {
+              e.target.style.background = 'rgba(0,255,136,0.15)'
+              e.target.style.transform = 'translateY(-2px)'
+            }}
+            onMouseOut={e => {
+              e.target.style.background = 'rgba(0,255,136,0.1)'
+              e.target.style.transform = 'none'
+            }}
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   )

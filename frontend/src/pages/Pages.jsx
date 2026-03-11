@@ -3,128 +3,302 @@
 // ═══════════════════════════════════════════
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../utils/AuthContext'
+import { useToast } from '../utils/ToastContext'
+import { authAPI } from '../utils/api'
 
 export function Home() {
   const navigate = useNavigate()
+  const [hoveredStat, setHoveredStat] = useState(null)
+  const [hoveredFeature, setHoveredFeature] = useState(null)
+  const [hoveredStep, setHoveredStep] = useState(null)
   return (
     <div className="page-content">
-      {/* HERO */}
+      {/* ═══ HERO ═══ */}
       <section style={{
         minHeight:'92vh', display:'flex', alignItems:'center',
-        padding:'3rem 2rem', maxWidth:1200, margin:'0 auto',
-        gap:'3rem', flexWrap:'wrap',
+        padding:'2rem', maxWidth:1200, margin:'0 auto',
+        position:'relative',
       }}>
-        {/* LEFT TEXT */}
-        <div style={{ flex:'1', minWidth:300 }}>
-          <div style={{
-            display:'inline-flex', alignItems:'center', gap:'.6rem',
-            background:'rgba(0,255,136,.08)', border:'1px solid rgba(0,255,136,.2)',
-            padding:'.3rem 1rem', borderRadius:20,
-            fontSize:'.78rem', fontWeight:600, color:'var(--g1)',
-            letterSpacing:'.08em', textTransform:'uppercase', marginBottom:'1.5rem',
-          }}>
-            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--g1)',animation:'pulse 2s infinite',display:'inline-block'}}/>
-            AI-Powered Medical Imaging
-          </div>
-          <h1>Visualize Your Health <span className="gradient-text">in 3D</span></h1>
-          <p style={{color:'var(--info)',fontSize:'.85rem',fontWeight:500,letterSpacing:'.1em',textTransform:'uppercase',margin:'.8rem 0'}}>
-            Powered by AI
-          </p>
-          <p style={{color:'var(--muted)',maxWidth:480,lineHeight:1.75,marginBottom:'2rem',fontSize:'1rem'}}>
-            Transform medical images into interactive 3D visualizations and get
-            AI-driven diagnostic insights. Detect diseases, analyze kidney health,
-            and generate detailed reports in seconds.
-          </p>
-          <div style={{display:'flex',gap:'1rem',flexWrap:'wrap',marginBottom:'2.5rem'}}>
-            <button className="btn btn-primary" onClick={()=>navigate('/upload')}>Upload Scan →</button>
-            <button className="btn btn-outline" onClick={()=>navigate('/insights')}>View Insights</button>
-            <button className="btn btn-outline" onClick={()=>navigate('/text3d')}>Text to 3D</button>
-          </div>
-          {/* stats row */}
-          <div style={{display:'flex',gap:'2rem',flexWrap:'wrap'}}>
-            {[['98.4%','Accuracy'],['12K+','Scans'],['340ms','Speed'],['3D','Visualization']].map(([n,l])=>(
-              <div key={l}>
-                <div style={{fontFamily:"'Syne',sans-serif",fontSize:'1.6rem',fontWeight:800,background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{n}</div>
-                <div style={{fontSize:'.72rem',color:'var(--muted)',marginTop:'.1rem'}}>{l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Background subtle radial glow */}
+        <div style={{position:'absolute',top:'10%',left:'5%',width:500,height:500,background:'radial-gradient(circle,rgba(0,255,136,.06) 0%,transparent 70%)',pointerEvents:'none',filter:'blur(60px)'}}/>
+        <div style={{position:'absolute',bottom:'10%',right:'10%',width:400,height:400,background:'radial-gradient(circle,rgba(0,229,255,.05) 0%,transparent 70%)',pointerEvents:'none',filter:'blur(60px)'}}/>
 
-        {/* RIGHT — 3D HUMAN MODEL */}
-        <div style={{
-          flex:'1', minWidth:300, minHeight:500,
-          background:'linear-gradient(135deg, rgba(0,0,0,.5), rgba(0,255,136,.1))',
-          border:'1px solid var(--border)',
-          borderRadius:24, overflow:'hidden',
-          position:'relative',
-          boxShadow:'0 8px 32px rgba(0,255,136,.2)',
-        }}>
-          {/* Animated grid bg */}
-          <div style={{
-            position:'absolute',inset:0,
-            backgroundImage:'linear-gradient(rgba(0,255,136,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.1) 1px,transparent 1px)',
-            backgroundSize:'32px 32px',
-            animation:'gridMove 20s linear infinite',
-          }}/>
-          {/* glow */}
-          <div style={{
-            position:'absolute',bottom:'-30%',left:'50%',transform:'translateX(-50%)',
-            width:400,height:400,
-            background:'radial-gradient(circle,rgba(0,200,83,.3),transparent 70%)',
-            animation:'pulseGlow 4s ease-in-out infinite',
-            pointerEvents:'none',
-          }}/>
-          <model-viewer
-            src="/static/human_base_mesh_male.glb"
-            alt="3D Human Body"
-            auto-rotate
-            camera-controls
-            shadow-intensity="0.8"
-            environment-image="neutral"
-            exposure="1.3"
-            camera-orbit="0deg 75deg 2.8m"
-            style={{
-              width:'100%', height:'100%', minHeight:480,
-              background:'transparent',
-              '--poster-color':'transparent',
-              filter:'drop-shadow(0 0 20px rgba(0,255,136,.3))',
-            }}
-          >
-            {/* Loading slot */}
-            <div slot="progress-bar" style={{display:'none'}}></div>
-          </model-viewer>
-          {/* overlay badge */}
-          <div style={{
-            position:'absolute',bottom:'1rem',left:'1rem',
-            background:'rgba(4,26,10,.9)',
-            border:'1px solid rgba(0,255,136,.5)',
-            borderRadius:12,padding:'.6rem 1rem',
-            backdropFilter:'blur(12px)',
-            display:'flex',alignItems:'center',gap:'.6rem',
-            boxShadow:'0 4px 16px rgba(0,0,0,.4)',
-          }}>
-            <div style={{width:8,height:8,borderRadius:'50%',background:'var(--g1)',animation:'pulse 2s infinite'}}/>
-            <span style={{fontSize:'.8rem',fontWeight:500}}>Interactive 3D Model</span>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'3rem',alignItems:'center',width:'100%',position:'relative',zIndex:1}}>
+          {/* LEFT TEXT */}
+          <div>
+            <div style={{
+              display:'inline-flex', alignItems:'center', gap:'.6rem',
+              background:'linear-gradient(135deg, rgba(0,255,136,.1), rgba(0,229,255,.06))',
+              border:'1px solid rgba(0,255,136,.25)',
+              padding:'.4rem 1.2rem', borderRadius:24,
+              fontSize:'.75rem', fontWeight:600, color:'var(--g1)',
+              letterSpacing:'.08em', textTransform:'uppercase', marginBottom:'1.8rem',
+              backdropFilter:'blur(10px)',
+              boxShadow:'0 4px 15px rgba(0,255,136,.15)',
+              animation:'fadeIn .6s ease-out',
+            }}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:'var(--g1)',animation:'pulse 2s infinite',display:'inline-block',boxShadow:'0 0 8px var(--g1)'}}/>
+              AI-Powered Medical Imaging
+            </div>
+
+            <h1 style={{
+              fontSize:'3.5rem',fontWeight:800,fontFamily:"'Syne',sans-serif",
+              lineHeight:1.08,marginBottom:'1rem',
+              animation:'fadeIn .8s ease-out',
+            }}>
+              Visualize Your<br/>
+              Health{' '}<span style={{
+                background:'linear-gradient(135deg, var(--g1), var(--g2), var(--g1))',
+                backgroundSize:'200% auto',
+                WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+                animation:'shimmer 3s linear infinite',
+              }}>in 3D</span>
+            </h1>
+
+            <p style={{
+              color:'var(--g2)',fontSize:'.8rem',fontWeight:600,letterSpacing:'.12em',
+              textTransform:'uppercase',marginBottom:'1.2rem',
+              display:'flex',alignItems:'center',gap:'.5rem',
+              animation:'fadeIn 1s ease-out',
+            }}>
+              <span style={{display:'inline-block',animation:'pulse 2s ease-in-out infinite'}}>⚡</span> Powered by AI & Deep Learning
+            </p>
+
+            <p style={{color:'var(--muted)',maxWidth:440,lineHeight:1.8,marginBottom:'2rem',fontSize:'.95rem',animation:'fadeIn 1.2s ease-out'}}>
+              Transform medical images into interactive 3D visualizations and get
+              AI-driven diagnostic insights. Detect diseases, analyze organ health,
+              and generate detailed reports — all in seconds.
+            </p>
+
+            <div style={{display:'flex',gap:'1rem',flexWrap:'wrap',marginBottom:'2.5rem',animation:'fadeIn 1.4s ease-out'}}>
+              <button className="btn btn-primary" onClick={()=>navigate('/upload')} style={{
+                padding:'.8rem 2.2rem',borderRadius:14,fontSize:'.9rem',fontWeight:700,
+                boxShadow:'0 10px 30px rgba(0,200,83,.35), 0 0 20px rgba(0,255,136,.15)',
+                transition:'all .3s cubic-bezier(0.23, 1, 0.320, 1)',
+              }}
+                onMouseOver={e=>{e.currentTarget.style.transform='translateY(-3px) scale(1.05)';e.currentTarget.style.boxShadow='0 15px 40px rgba(0,200,83,.45), 0 0 30px rgba(0,255,136,.2)'}}
+                onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 10px 30px rgba(0,200,83,.35), 0 0 20px rgba(0,255,136,.15)'}}
+              >Upload Scan →</button>
+              <button className="btn btn-outline" onClick={()=>navigate('/text3d')} style={{
+                padding:'.8rem 1.8rem',borderRadius:14,fontSize:'.9rem',
+                transition:'all .3s cubic-bezier(0.23, 1, 0.320, 1)',
+              }}
+                onMouseOver={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 10px 25px rgba(0,229,255,.15)'}}
+                onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none'}}
+              >Text to 3D ✦</button>
+            </div>
+
+            {/* Stats Row */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'.8rem',animation:'fadeIn 1.6s ease-out'}}>
+              {[['98.4%','Accuracy','🎯'],['12K+','Scans','📊'],['340ms','Speed','⚡'],['3D','Models','🧬']].map(([n,l,icon],idx)=>(
+                <div key={l}
+                  onMouseEnter={()=>setHoveredStat(idx)}
+                  onMouseLeave={()=>setHoveredStat(null)}
+                  style={{
+                    background: hoveredStat===idx ? 'linear-gradient(135deg, rgba(0,255,136,.12), rgba(0,229,255,.08))' : 'linear-gradient(135deg, rgba(0,255,136,.05), rgba(0,229,255,.02))',
+                    border:'1px solid rgba(0,255,136,.12)',
+                    borderRadius:14,padding:'.8rem',
+                    backdropFilter:'blur(10px)',
+                    transition:'all .4s cubic-bezier(0.23, 1, 0.320, 1)',
+                    transform: hoveredStat===idx ? 'translateY(-4px)' : 'none',
+                    boxShadow: hoveredStat===idx ? '0 15px 30px rgba(0,255,136,.12)' : 'none',
+                    cursor:'default',textAlign:'center',
+                    position:'relative',overflow:'hidden',
+                  }}>
+                  {hoveredStat===idx && <div style={{position:'absolute',top:0,left:'-100%',width:'200%',height:'100%',background:'linear-gradient(90deg, transparent, rgba(0,255,136,.08), transparent)',animation:'shimmer 1.5s ease-out',pointerEvents:'none'}}/>}
+                  <div style={{fontSize:'.75rem',marginBottom:'.2rem'}}>{icon}</div>
+                  <div style={{fontFamily:"'Syne',sans-serif",fontSize:'1.25rem',fontWeight:800,background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{n}</div>
+                  <div style={{fontSize:'.65rem',color:'var(--muted)',marginTop:'.15rem',textTransform:'uppercase',letterSpacing:'.05em'}}>{l}</div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* RIGHT — 3D HUMAN MODEL */}
           <div style={{
-            position:'absolute',top:'1rem',right:'1rem',
-            background:'rgba(4,26,10,.8)',
-            border:'1px solid var(--border)',
-            borderRadius:8,padding:'.3rem .7rem',
-            backdropFilter:'blur(10px)',
-            fontSize:'.72rem',color:'var(--muted)',
-          }}>
-            Drag to rotate · Scroll to zoom
+            minHeight:560,
+            background:'linear-gradient(135deg, rgba(0,0,0,.5), rgba(0,255,136,.1))',
+            border:'1px solid rgba(0,255,136,.2)',
+            borderRadius:28, overflow:'hidden',
+            position:'relative',
+            boxShadow:'0 30px 80px rgba(0,255,136,.18), 0 0 40px rgba(0,255,136,.06), inset 0 1px 0 rgba(255,255,255,.08)',
+            transition:'all .5s cubic-bezier(0.23, 1, 0.320, 1)',
+            animation:'fadeIn 1s ease-out',
+          }}
+            onMouseOver={e=>{e.currentTarget.style.boxShadow='0 40px 100px rgba(0,255,136,.25), 0 0 60px rgba(0,255,136,.12), inset 0 1px 0 rgba(255,255,255,.1)';e.currentTarget.style.borderColor='rgba(0,255,136,.35)'}}
+            onMouseOut={e=>{e.currentTarget.style.boxShadow='0 30px 80px rgba(0,255,136,.18), 0 0 40px rgba(0,255,136,.06), inset 0 1px 0 rgba(255,255,255,.08)';e.currentTarget.style.borderColor='rgba(0,255,136,.2)'}}
+          >
+            {/* Animated grid bg */}
+            <div style={{
+              position:'absolute',inset:0,
+              backgroundImage:'linear-gradient(rgba(0,255,136,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.08) 1px,transparent 1px)',
+              backgroundSize:'32px 32px',
+              animation:'gridMove 20s linear infinite',
+            }}/>
+            {/* glow */}
+            <div style={{
+              position:'absolute',bottom:'-30%',left:'50%',transform:'translateX(-50%)',
+              width:400,height:400,
+              background:'radial-gradient(circle,rgba(0,200,83,.25),transparent 70%)',
+              animation:'pulseGlow 4s ease-in-out infinite',
+              pointerEvents:'none',
+            }}/>
+            <model-viewer
+              src="/static/human_base_mesh_male.glb"
+              alt="3D Human Body"
+              auto-rotate
+              camera-controls
+              shadow-intensity="0.8"
+              environment-image="neutral"
+              exposure="1.3"
+              camera-orbit="0deg 75deg 2.8m"
+              style={{
+                width:'100%', height:'100%', minHeight:560,
+                background:'transparent',
+                '--poster-color':'transparent',
+                filter:'drop-shadow(0 0 25px rgba(0,255,136,.25))',
+              }}
+            >
+              <div slot="progress-bar" style={{display:'none'}}></div>
+            </model-viewer>
+            {/* overlay badges */}
+            <div style={{
+              position:'absolute',bottom:'1rem',left:'1rem',
+              background:'rgba(4,26,10,.92)',
+              border:'1px solid rgba(0,255,136,.4)',
+              borderRadius:12,padding:'.5rem 1rem',
+              backdropFilter:'blur(12px)',
+              display:'flex',alignItems:'center',gap:'.5rem',
+              boxShadow:'0 4px 16px rgba(0,0,0,.4)',
+            }}>
+              <div style={{width:7,height:7,borderRadius:'50%',background:'var(--g1)',animation:'pulse 2s infinite',boxShadow:'0 0 6px var(--g1)'}}/>
+              <span style={{fontSize:'.75rem',fontWeight:500}}>Interactive 3D Model</span>
+            </div>
+            <div style={{
+              position:'absolute',top:'1rem',right:'1rem',
+              background:'rgba(4,26,10,.85)',
+              border:'1px solid rgba(0,255,136,.15)',
+              borderRadius:8,padding:'.3rem .7rem',
+              backdropFilter:'blur(10px)',
+              fontSize:'.7rem',color:'var(--muted)',
+            }}>
+              Drag to rotate · Scroll to zoom
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <div style={{padding:'2rem',maxWidth:1200,margin:'0 auto'}}>
-        <div style={{borderTop:'1px solid var(--border)',marginBottom:'3rem'}}/>
-        <h2 style={{marginBottom:'1.5rem'}}>Everything you need</h2>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'1.2rem'}}>
+      {/* ═══ TRUSTED BANNER ═══ */}
+      <div style={{maxWidth:1200,margin:'0 auto',padding:'0 2rem'}}>
+        <div style={{
+          background:'linear-gradient(135deg, rgba(0,255,136,.04), rgba(0,229,255,.02))',
+          border:'1px solid rgba(0,255,136,.08)',
+          borderRadius:20,padding:'1.5rem 2rem',
+          display:'flex',alignItems:'center',justifyContent:'center',gap:'3rem',
+          flexWrap:'wrap',
+          backdropFilter:'blur(10px)',
+        }}>
+          <span style={{fontSize:'.72rem',color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600}}>Trusted Technologies</span>
+          {['🧠 YOLOv8 AI','🔬 DICOM Support','🌐 WebGL 3D','🤖 Gemini Pro','🔒 JWT Secure','💾 PostgreSQL'].map(t=>(
+            <span key={t} style={{fontSize:'.78rem',color:'rgba(232,245,233,.5)',fontWeight:500,whiteSpace:'nowrap'}}>{t}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ HOW IT WORKS ═══ */}
+      <div style={{padding:'5rem 2rem 3rem',maxWidth:1200,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:'3rem'}}>
+          <span style={{
+            display:'inline-block',
+            background:'linear-gradient(135deg, rgba(0,229,255,.1), rgba(0,255,136,.06))',
+            border:'1px solid rgba(0,229,255,.2)',
+            padding:'.3rem 1rem',borderRadius:20,
+            fontSize:'.72rem',fontWeight:600,color:'var(--g2)',
+            letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'1rem',
+          }}>Simple Process</span>
+          <h2 style={{
+            margin:0,fontSize:'2.2rem',fontWeight:800,fontFamily:"'Syne',sans-serif",
+            background:'linear-gradient(135deg, var(--g1), var(--g2))',
+            WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+          }}>How It Works</h2>
+          <p style={{color:'var(--muted)',fontSize:'.9rem',marginTop:'.6rem'}}>Get results in three simple steps</p>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'2rem',position:'relative'}}>
+          {/* Connecting line */}
+          <div style={{
+            position:'absolute',top:'50px',left:'16%',right:'16%',height:2,
+            background:'linear-gradient(90deg, rgba(0,255,136,.3), rgba(0,229,255,.3), rgba(0,255,136,.3))',
+            borderRadius:2,zIndex:0,
+          }}/>
+          {[
+            ['01','Upload','Upload your medical scan image (X-ray, CT, MRI, DICOM)','📤','var(--g1)'],
+            ['02','AI Analysis','Our YOLOv8 model detects anomalies with 98%+ accuracy','🧠','var(--g2)'],
+            ['03','3D Results','Get interactive 3D visualization + detailed diagnostic report','🎯','var(--g3)'],
+          ].map(([num,title,desc,icon,color],idx)=>(
+            <div key={num}
+              onMouseEnter={()=>setHoveredStep(idx)}
+              onMouseLeave={()=>setHoveredStep(null)}
+              style={{
+                background: hoveredStep===idx 
+                  ? 'linear-gradient(135deg, rgba(0,255,136,.1), rgba(0,229,255,.06))'
+                  : 'linear-gradient(135deg, rgba(0,255,136,.04), rgba(0,229,255,.02))',
+                border: hoveredStep===idx ? '1px solid rgba(0,255,136,.3)' : '1px solid rgba(0,255,136,.08)',
+                borderRadius:22,padding:'2rem',textAlign:'center',
+                backdropFilter:'blur(10px)',
+                transition:'all .4s cubic-bezier(0.23, 1, 0.320, 1)',
+                transform: hoveredStep===idx ? 'translateY(-8px)' : 'none',
+                boxShadow: hoveredStep===idx ? '0 25px 50px rgba(0,255,136,.12)' : '0 5px 15px rgba(0,0,0,.1)',
+                position:'relative',zIndex:1,
+                overflow:'hidden',
+              }}>
+              {hoveredStep===idx && <div style={{position:'absolute',top:0,left:'-100%',width:'200%',height:'100%',background:'linear-gradient(90deg, transparent, rgba(0,255,136,.06), transparent)',animation:'shimmer 1.5s ease-out',pointerEvents:'none'}}/>}
+              {/* Step number circle */}
+              <div style={{
+                width:60,height:60,borderRadius:'50%',
+                background:`linear-gradient(135deg, ${color}, rgba(0,229,255,.8))`,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                margin:'0 auto 1.2rem',
+                fontSize:'1.6rem',
+                boxShadow: hoveredStep===idx ? `0 12px 30px rgba(0,255,136,.3)` : `0 8px 20px rgba(0,255,136,.15)`,
+                transition:'all .4s',
+                transform: hoveredStep===idx ? 'scale(1.1)' : 'none',
+              }}>{icon}</div>
+              <div style={{
+                fontSize:'.65rem',fontWeight:700,color,
+                letterSpacing:'.15em',textTransform:'uppercase',marginBottom:'.5rem',
+              }}>Step {num}</div>
+              <h3 style={{
+                fontSize:'1.15rem',fontWeight:700,marginBottom:'.6rem',
+                fontFamily:"'Syne',sans-serif",
+              }}>{title}</h3>
+              <p style={{fontSize:'.83rem',color:'var(--muted)',lineHeight:1.7,margin:0}}>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ FEATURES GRID ═══ */}
+      <div style={{padding:'2rem 2rem 3rem',maxWidth:1200,margin:'0 auto'}}>
+        <div style={{borderTop:'1px solid rgba(0,255,136,.08)',marginBottom:'3rem'}}/>
+        <div style={{textAlign:'center',marginBottom:'2.5rem'}}>
+          <span style={{
+            display:'inline-block',
+            background:'linear-gradient(135deg, rgba(0,255,136,.1), rgba(0,229,255,.06))',
+            border:'1px solid rgba(0,255,136,.2)',
+            padding:'.3rem 1rem',borderRadius:20,
+            fontSize:'.72rem',fontWeight:600,color:'var(--g1)',
+            letterSpacing:'.08em',textTransform:'uppercase',marginBottom:'1rem',
+          }}>Powerful Features</span>
+          <h2 style={{
+            margin:0,fontSize:'2.2rem',fontWeight:800,fontFamily:"'Syne',sans-serif",
+            background:'linear-gradient(135deg, var(--g1), var(--g2))',
+            WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+          }}>Everything you need</h2>
+          <p style={{color:'var(--muted)',fontSize:'.9rem',marginTop:'.6rem'}}>Advanced AI tools for medical imaging analysis</p>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1.5rem'}}>
           {[
             ['🫀','3D Organ Modeling','Upload DICOM or standard medical images and get interactive 3D models with highlighted anomalies.'],
             ['🧠','AI Diagnostics','YOLO model detects kidney stones, tumors, cysts, and more with 98%+ accuracy.'],
@@ -132,15 +306,99 @@ export function Home() {
             ['🔬','Trend Analysis','Compare scans over time to track disease progression with visual diff overlays.'],
             ['💬','Text to 3D','Describe anatomy in plain English — Gemini AI generates a 3D model instantly.'],
             ['🔒','Secure & Private','JWT authentication, PostgreSQL storage — your medical data stays yours.'],
-          ].map(([icon,title,desc])=>(
-            <div key={title} className="card" style={{transition:'all .3s',cursor:'default'}}
-              onMouseOver={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.borderColor='rgba(0,255,136,.25)'}}
-              onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.borderColor='var(--border)'}}>
-              <div style={{width:44,height:44,background:'linear-gradient(135deg,rgba(0,200,83,.2),rgba(0,229,255,.1))',border:'1px solid rgba(0,255,136,.2)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.2rem',marginBottom:'1rem'}}>{icon}</div>
-              <h3>{title}</h3>
-              <p style={{fontSize:'.84rem',color:'var(--muted)',marginTop:'.5rem',lineHeight:1.6}}>{desc}</p>
+          ].map(([icon,title,desc],idx)=>(
+            <div key={title}
+              onMouseEnter={()=>setHoveredFeature(idx)}
+              onMouseLeave={()=>setHoveredFeature(null)}
+              style={{
+                background: hoveredFeature===idx
+                  ? 'linear-gradient(135deg, rgba(0,255,136,.1), rgba(0,229,255,.06))'
+                  : 'linear-gradient(135deg, rgba(0,255,136,.04), rgba(0,229,255,.02))',
+                border: hoveredFeature===idx ? '1px solid rgba(0,255,136,.3)' : '1px solid rgba(0,255,136,.08)',
+                borderRadius:20,
+                padding:'2rem',
+                backdropFilter:'blur(15px)',
+                cursor:'default',
+                transition:'all .4s cubic-bezier(0.23, 1, 0.320, 1)',
+                transform: hoveredFeature===idx ? 'translateY(-8px) scale(1.02)' : 'none',
+                boxShadow: hoveredFeature===idx
+                  ? '0 25px 60px rgba(0,255,136,.15), 0 0 30px rgba(0,255,136,.08)'
+                  : '0 5px 15px rgba(0,0,0,.08)',
+                position:'relative',
+                overflow:'hidden',
+              }}>
+              {hoveredFeature===idx && <div style={{
+                position:'absolute',top:0,left:'-100%',width:'200%',height:'100%',
+                background:'linear-gradient(90deg, transparent, rgba(0,255,136,.06), transparent)',
+                animation:'shimmer 1.5s ease-out',pointerEvents:'none'
+              }}/>}
+              <div style={{
+                width:52,height:52,
+                background:'linear-gradient(135deg,rgba(0,200,83,.2),rgba(0,229,255,.12))',
+                border:'1px solid rgba(0,255,136,.2)',
+                borderRadius:16,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                fontSize:'1.5rem',marginBottom:'1.2rem',
+                boxShadow:'0 8px 20px rgba(0,255,136,.1)',
+                transition:'all .3s',
+                transform: hoveredFeature===idx ? 'scale(1.1) rotate(5deg)' : 'none',
+              }}>{icon}</div>
+              <h3 style={{
+                fontSize:'1.05rem',fontWeight:700,marginBottom:'.5rem',
+                fontFamily:"'Syne',sans-serif",
+                background: hoveredFeature===idx ? 'linear-gradient(135deg, var(--g1), var(--g2))' : 'none',
+                WebkitBackgroundClip: hoveredFeature===idx ? 'text' : 'unset',
+                WebkitTextFillColor: hoveredFeature===idx ? 'transparent' : 'var(--text)',
+                transition:'all .3s',
+              }}>{title}</h3>
+              <p style={{fontSize:'.83rem',color:'var(--muted)',marginTop:'.3rem',lineHeight:1.7}}>{desc}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ═══ CTA BANNER ═══ */}
+      <div style={{padding:'2rem 2rem 4rem',maxWidth:1200,margin:'0 auto'}}>
+        <div style={{
+          background:'linear-gradient(135deg, rgba(0,255,136,.1), rgba(0,229,255,.06))',
+          border:'1px solid rgba(0,255,136,.2)',
+          borderRadius:28,padding:'4rem 3rem',
+          backdropFilter:'blur(20px)',
+          textAlign:'center',
+          position:'relative',overflow:'hidden',
+          boxShadow:'0 30px 80px rgba(0,255,136,.1)',
+        }}>
+          <div style={{position:'absolute',inset:0,background:'radial-gradient(circle at 30% 50%, rgba(0,200,83,.1) 0%, transparent 50%)',pointerEvents:'none'}}/>
+          <div style={{position:'absolute',inset:0,background:'radial-gradient(circle at 80% 50%, rgba(0,229,255,.08) 0%, transparent 50%)',pointerEvents:'none'}}/>
+          <div style={{position:'relative',zIndex:1}}>
+            <span style={{fontSize:'3rem',display:'inline-block',animation:'float 3s ease-in-out infinite',marginBottom:'1rem'}}>🚀</span>
+            <h2 style={{
+              fontSize:'2.2rem',fontWeight:800,fontFamily:"'Syne',sans-serif",
+              background:'linear-gradient(135deg, var(--g1), var(--g2))',
+              WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+              marginBottom:'.8rem',
+            }}>Ready to Transform Your Diagnostics?</h2>
+            <p style={{color:'var(--muted)',fontSize:'1rem',maxWidth:500,margin:'0 auto 2rem',lineHeight:1.7}}>
+              Start analyzing medical images with AI-powered 3D visualization. Free to get started, no credit card required.
+            </p>
+            <div style={{display:'flex',gap:'1rem',justifyContent:'center',flexWrap:'wrap'}}>
+              <button className="btn btn-primary" onClick={()=>navigate('/upload')} style={{
+                padding:'.9rem 2.5rem',borderRadius:14,fontSize:'.95rem',fontWeight:700,
+                boxShadow:'0 12px 35px rgba(0,200,83,.4), 0 0 25px rgba(0,255,136,.15)',
+                transition:'all .3s cubic-bezier(0.23, 1, 0.320, 1)',
+              }}
+                onMouseOver={e=>{e.currentTarget.style.transform='translateY(-3px) scale(1.05)';e.currentTarget.style.boxShadow='0 18px 45px rgba(0,200,83,.5), 0 0 35px rgba(0,255,136,.2)'}}
+                onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 12px 35px rgba(0,200,83,.4), 0 0 25px rgba(0,255,136,.15)'}}
+              >Get Started Free →</button>
+              <button className="btn btn-outline" onClick={()=>navigate('/pricing')} style={{
+                padding:'.9rem 2rem',borderRadius:14,fontSize:'.95rem',
+                transition:'all .3s cubic-bezier(0.23, 1, 0.320, 1)',
+              }}
+                onMouseOver={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 10px 25px rgba(0,255,136,.15)'}}
+                onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none'}}
+              >View Pricing</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -152,11 +410,12 @@ export function Home() {
 // ═══════════════════════════════════════════
 export function Insights() {
   const [hoveredBar, setHoveredBar] = React.useState(null)
+  const [hoveredKPI, setHoveredKPI] = React.useState(null)
   const kpis = [
-    {label:'Total Cases Analyzed',val:'10,248',change:'↑ 12.4% this month',up:true},
-    {label:'Cancer Detection Rate',val:'6.2%',change:'↑ 0.8% vs last year',up:false,color:'var(--danger)'},
-    {label:'Avg Confidence Score',val:'93.7%',change:'↑ 2.1% improvement',up:true},
-    {label:'False Positive Rate',val:'1.8%',change:'↓ 0.3% reduction',up:true,color:'var(--warn)'},
+    {label:'Total Cases Analyzed',val:'10,248',change:'↑ 12.4% this month',up:true,icon:'📊'},
+    {label:'Cancer Detection Rate',val:'6.2%',change:'↑ 0.8% vs last year',up:false,color:'var(--danger)',icon:'🎯'},
+    {label:'Avg Confidence Score',val:'93.7%',change:'↑ 2.1% improvement',up:true,icon:'✅'},
+    {label:'False Positive Rate',val:'1.8%',change:'↓ 0.3% reduction',up:true,color:'var(--warn)',icon:'⚡'},
   ]
   const bars = [
     {label:'Kidney',val:68,count:635,color:'linear-gradient(90deg,var(--g3),var(--g1))'},
@@ -168,69 +427,254 @@ export function Insights() {
   return (
     <div className="page-content">
       <div className="section-wrap">
-        <h2 style={{marginBottom:'.3rem'}}>Health Insights Dashboard</h2>
-        <p style={{color:'var(--muted)',fontSize:'.85rem',marginBottom:'2rem'}}>AI-driven analysis · Updated weekly</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem',marginBottom:'2rem'}}>
-          {kpis.map(k=>(
-            <div key={k.label} className="card">
-              <div style={{fontSize:'.78rem',color:'var(--muted)'}}>{k.label}</div>
-              <div style={{fontFamily:"'Syne',sans-serif",fontSize:'2rem',fontWeight:800,margin:'.2rem 0',
-                ...(k.color?{color:k.color}:{background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'})}}>
-                {k.val}</div>
-              <div style={{fontSize:'.75rem',color:k.up?'var(--g1)':'var(--danger)'}}>{k.change}</div>
+        {/* Enhanced Header */}
+        <div style={{marginBottom:'3rem',perspective:'1000px'}}>
+          <div style={{
+            background:'linear-gradient(135deg, rgba(0,255,136,.08), rgba(0,229,255,.05))',
+            border:'1px solid rgba(0,255,136,.15)',
+            borderRadius:'24px',
+            padding:'2.5rem',
+            backdropFilter:'blur(20px)',
+            position:'relative',
+            overflow:'hidden',
+            transform:'translateZ(0)',
+            boxShadow:'0 20px 60px rgba(0,255,136,.1), inset 0 1px 0 rgba(255,255,255,.1)'
+          }}>
+            {/* Animated background gradient */}
+            <div style={{
+              position:'absolute',
+              inset:0,
+              background:'radial-gradient(circle at 20% 50%, rgba(0,255,136,.15) 0%, transparent 50%)',
+              animation:'pulseGlow 8s ease-in-out infinite',
+              pointerEvents:'none'
+            }}/>
+            {/* Content */}
+            <div style={{position:'relative',zIndex:1}}>
+              <div style={{
+                display:'flex',
+                alignItems:'center',
+                gap:'1rem',
+                marginBottom:'1rem'
+              }}>
+                <span style={{
+                  fontSize:'2rem',
+                  animation:'float 3s ease-in-out infinite',
+                  display:'inline-block'
+                }}>📈</span>
+                <h1 style={{
+                  margin:0,
+                  background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                  WebkitBackgroundClip:'text',
+                  WebkitTextFillColor:'transparent',
+                  fontSize:'2.4rem',
+                  fontWeight:800,
+                  fontFamily:"'Syne',sans-serif"
+                }}>Health Insights Dashboard</h1>
+              </div>
+              <p style={{
+                color:'var(--muted)',
+                fontSize:'.95rem',
+                margin:0,
+                letterSpacing:'.05em'
+              }}>🤖 AI-driven analysis • 📊 Real-time metrics • 🎯 Updated weekly</p>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Cards Grid - Enhanced with 3D Effects */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'1.2rem',marginBottom:'2.5rem'}}>
+          {kpis.map((k,i)=>(
+            <div 
+              key={k.label}
+              onMouseEnter={() => setHoveredKPI(i)}
+              onMouseLeave={() => setHoveredKPI(null)}
+              style={{
+                background:'linear-gradient(135deg, rgba(0,255,136,.08), rgba(0,229,255,.04))',
+                border:'1px solid rgba(0,255,136,.15)',
+                borderRadius:'16px',
+                padding:'1.8rem',
+                backdropFilter:'blur(15px)',
+                cursor:'pointer',
+                transition:'all .4s cubic-bezier(0.23, 1, 0.320, 1)',
+                transform: hoveredKPI === i ? 'translateY(-8px) scale(1.02)' : 'none',
+                boxShadow: hoveredKPI === i 
+                  ? '0 30px 60px rgba(0,255,136,.15), inset 0 1px 0 rgba(255,255,255,.1)'
+                  : '0 10px 30px rgba(0,255,136,.05), inset 0 1px 0 rgba(255,255,255,.08)',
+                position:'relative',
+                overflow:'hidden'
+              }}>
+              {/* Shine effect */}
+              <div style={{
+                position:'absolute',
+                top:'-50%',
+                left:'-50%',
+                width:'200%',
+                height:'200%',
+                background:'linear-gradient(135deg, transparent, rgba(255,255,255,.1), transparent)',
+                transform:'rotate(45deg)',
+                animation: hoveredKPI === i ? 'shimmer 0.6s' : 'none',
+                pointerEvents:'none'
+              }}/>
+              
+              <div style={{position:'relative',zIndex:1}}>
+                <div style={{
+                  display:'flex',
+                  alignItems:'center',
+                  justifyContent:'space-between',
+                  marginBottom:'1rem'
+                }}>
+                  <span style={{fontSize:'.85rem',color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.08em',fontWeight:600}}>
+                    {k.label}
+                  </span>
+                  <span style={{fontSize:'1.5rem',animation:'rotate 20s linear infinite'}}>
+                    {k.icon}
+                  </span>
+                </div>
+                <div style={{
+                  fontFamily:"'Syne',sans-serif",
+                  fontSize:'2.2rem',
+                  fontWeight:800,
+                  margin:'.5rem 0',
+                  background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                  WebkitBackgroundClip:'text',
+                  WebkitTextFillColor:'transparent',
+                  ...(k.color && {background:'none',WebkitTextFillColor:'unset',color:k.color})
+                }}>
+                  {k.val}
+                </div>
+                <div style={{
+                  fontSize:'.8rem',
+                  color:k.up?'var(--g1)':'var(--danger)',
+                  fontWeight:600,
+                  letterSpacing:'.02em'
+                }}>
+                  {k.change}
+                </div>
+              </div>
             </div>
           ))}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.2rem',marginBottom:'1.5rem'}}>
-          <div className="card">
-            <h3 style={{marginBottom:'1.2rem'}}>Cancer Types Distribution</h3>
-            {bars.map(b=>(
-              <div key={b.label} style={{display:'flex',alignItems:'center',gap:'.8rem',fontSize:'.78rem',marginBottom:'.6rem'}}
+
+        {/* Charts Section */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'1.5rem'}}>
+          {/* Cancer Distribution Card */}
+          <div style={{
+            background:'linear-gradient(135deg, rgba(0,255,136,.06), rgba(0,229,255,.03))',
+            border:'1px solid rgba(0,255,136,.15)',
+            borderRadius:'20px',
+            padding:'2rem',
+            backdropFilter:'blur(15px)',
+            boxShadow:'0 15px 40px rgba(0,255,136,.08)',
+            position:'relative',
+            overflow:'hidden'
+          }}>
+            <h3 style={{
+              marginBottom:'1.5rem',
+              background:'linear-gradient(135deg, var(--g1), var(--g2))',
+              WebkitBackgroundClip:'text',
+              WebkitTextFillColor:'transparent',
+              fontSize:'1.3rem',
+              fontWeight:700
+            }}>🔬 Cancer Types Distribution</h3>
+            {bars.map((b,idx)=>(
+              <div 
+                key={b.label} 
+                style={{
+                  display:'flex',alignItems:'center',gap:'.8rem',fontSize:'.78rem',marginBottom:'1rem',
+                  transition:'all .3s',
+                  transform: hoveredBar === b ? 'translateX(6px)' : 'none'
+                }}
                 onMouseEnter={() => setHoveredBar(b)}
                 onMouseLeave={() => setHoveredBar(null)}>
-                <span style={{width:70,color:'var(--muted)',textAlign:'right'}}>{b.label}</span>
-                <div style={{flex:1,height:28,background:'rgba(0,255,136,.05)',borderRadius:4,overflow:'hidden',border:'1px solid var(--border)'}}>
-                  <div style={{width:`${b.val}%`,height:'100%',background:b.color,display:'flex',alignItems:'center',paddingLeft:'.5rem',fontSize:'.72rem',fontWeight:600,color:'#020c06'}}>{b.val}%</div>
+                <span style={{width:70,color:'var(--muted)',textAlign:'right',fontWeight:600}}>{b.label}</span>
+                <div style={{
+                  flex:1,height:32,background:'rgba(0,255,136,.08)',borderRadius:8,overflow:'hidden',
+                  border:'1px solid rgba(0,255,136,.15)',
+                  boxShadow:'inset 0 2px 8px rgba(0,0,0,.3)'
+                }}>
+                  <div style={{
+                    width:`${b.val}%`,height:'100%',background:b.color,display:'flex',alignItems:'center',
+                    paddingLeft:'.8rem',fontSize:'.75rem',fontWeight:700,color:'#020c06',
+                    boxShadow:'0 0 20px rgba(0,255,136,.4)',
+                    transition:'all .4s cubic-bezier(0.23, 1, 0.320, 1)'
+                  }}>{b.val}%</div>
                 </div>
-                <span style={{width:40,textAlign:'right'}}>{b.count}</span>
+                <span style={{width:40,textAlign:'right',fontWeight:600,color:'var(--g1)'}}>{b.count}</span>
               </div>
             ))}
             {hoveredBar && (
               <div style={{
-                marginTop: '1rem',
-                padding: '1rem',
-                background: 'var(--dark2)',
-                border: '1px solid var(--border)',
-                borderRadius: 8,
-                textAlign: 'center'
+                marginTop:'1.5rem',
+                padding:'1.2rem',
+                background:'linear-gradient(135deg, rgba(0,255,136,.12), rgba(0,229,255,.06))',
+                border:'1px solid rgba(0,255,136,.2)',
+                borderRadius:'12px',
+                textAlign:'center',
+                animation:'slideIn .3s ease-out',
+                boxShadow:'0 10px 30px rgba(0,255,136,.1)'
               }}>
-                <strong>{hoveredBar.label}</strong>: {hoveredBar.count} cases ({hoveredBar.val}% of total)
+                <strong style={{fontSize:'1.1rem',color:'var(--g1)'}}>{hoveredBar.label}</strong>
+                <div style={{color:'var(--muted)',fontSize:'.85rem',marginTop:'.3rem'}}>
+                  {hoveredBar.count} cases ({hoveredBar.val}% of total)
+                </div>
               </div>
             )}
           </div>
-          <div className="card" style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-            <h3 style={{marginBottom:'1.2rem',alignSelf:'flex-start'}}>Severity Breakdown</h3>
-            <div style={{width:140,height:140,position:'relative',margin:'0 auto'}}>
-              <svg style={{transform:'rotate(-90deg)'}} width="140" height="140" viewBox="0 0 140 140">
-                <circle cx="70" cy="70" r="52" fill="none" stroke="rgba(0,255,136,.08)" strokeWidth="16"/>
-                <circle cx="70" cy="70" r="52" fill="none" stroke="var(--g1)" strokeWidth="16" strokeDasharray="130.8 196.2"/>
-                <circle cx="70" cy="70" r="52" fill="none" stroke="#ffaa00" strokeWidth="16" strokeDasharray="114.5 212.4" strokeDashoffset="-130.8"/>
-                <circle cx="70" cy="70" r="52" fill="none" stroke="#ff4444" strokeWidth="16" strokeDasharray="81.7 245.3" strokeDashoffset="-245.3"/>
+
+          {/* Severity Chart Card */}
+          <div style={{
+            background:'linear-gradient(135deg, rgba(0,255,136,.06), rgba(0,229,255,.03))',
+            border:'1px solid rgba(0,255,136,.15)',
+            borderRadius:'20px',
+            padding:'2rem',
+            backdropFilter:'blur(15px)',
+            boxShadow:'0 15px 40px rgba(0,255,136,.08)',
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+            position:'relative',
+            overflow:'hidden'
+          }}>
+            <h3 style={{
+              marginBottom:'1.5rem',
+              alignSelf:'flex-start',
+              background:'linear-gradient(135deg, var(--g1), var(--g2))',
+              WebkitBackgroundClip:'text',
+              WebkitTextFillColor:'transparent',
+              fontSize:'1.3rem',
+              fontWeight:700
+            }}>📊 Severity Breakdown</h3>
+            <div style={{width:160,height:160,position:'relative',margin:'1rem auto 0'}}>
+              <svg 
+                style={{
+                  transform:'rotate(-90deg)',
+                  filter:'drop-shadow(0 15px 35px rgba(0,255,136,.15))'
+                }} 
+                width="160" height="160" viewBox="0 0 160 160">
+                <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(0,255,136,.08)" strokeWidth="18"/>
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--g1)" strokeWidth="18" strokeDasharray="150.8 226.2" style={{filter:'drop-shadow(0 0 10px var(--g1))'}}/>
+                <circle cx="80" cy="80" r="60" fill="none" stroke="#ffaa00" strokeWidth="18" strokeDasharray="132.5 244.4" strokeDashoffset="-150.8" style={{filter:'drop-shadow(0 0 8px #ffaa00)'}}/>
+                <circle cx="80" cy="80" r="60" fill="none" stroke="#ff4444" strokeWidth="18" strokeDasharray="94.7 282.3" strokeDashoffset="-283.3" style={{filter:'drop-shadow(0 0 8px #ff4444)'}}/>
               </svg>
               <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-                <div style={{fontFamily:"'Syne',sans-serif",fontSize:'1.6rem',fontWeight:800,background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>1,843</div>
-                <div style={{fontSize:'.65rem',color:'var(--muted)',textTransform:'uppercase'}}>Total</div>
+                <div style={{
+                  fontFamily:"'Syne',sans-serif",fontSize:'1.9rem',fontWeight:800,
+                  background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                  WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'
+                }}>1,843</div>
+                <div style={{fontSize:'.7rem',color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.1em'}}>Total Cases</div>
               </div>
             </div>
-            <div style={{display:'flex',gap:'1rem',marginTop:'1rem',flexWrap:'wrap',justifyContent:'center'}}>
-              {[['var(--g1)','Mild 40%'],['#ffaa00','Moderate 35%'],['#ff4444','Severe 25%']].map(([c,l])=>(
-                <span key={l} style={{fontSize:'.75rem',display:'flex',alignItems:'center',gap:'.3rem'}}>
-                  <span style={{width:8,height:8,borderRadius:2,background:c,display:'inline-block'}}/>{l}
-                </span>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'.8rem',marginTop:'1.8rem',width:'100%'}}>
+              {[{c:'var(--g1)',l:'Mild',p:'40%'},{c:'#ffaa00',l:'Moderate',p:'35%'},{c:'#ff4444',l:'Severe',p:'25%'}].map(x=>(
+                <div key={x.l} style={{textAlign:'center',padding:'.8rem',background:'rgba(0,255,136,.05)',borderRadius:'10px',border:'1px solid rgba(0,255,136,.1)'}}>
+                  <div style={{width:12,height:12,borderRadius:3,background:x.c,margin:'0 auto .5rem',boxShadow:`0 0 12px ${x.c}`}}/>
+                  <div style={{fontSize:'.75rem',color:'var(--muted)',fontWeight:600}}>{x.l}</div>
+                  <div style={{fontSize:'.9rem',color:x.c,fontWeight:700,marginTop:'.2rem'}}>{x.p}</div>
+                </div>
               ))}
             </div>
           </div>
         </div>
+
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.2rem'}}>
           <div className="card">
             <h3 style={{marginBottom:'1rem'}}>Age Group Risk</h3>
@@ -258,32 +702,6 @@ export function Insights() {
           <h3 style={{marginBottom:'1.5rem', color:'var(--text)'}}>Advanced Analytics</h3>
           <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(400px,1fr))', gap:'1.5rem'}}>
             
-            {/* Trend Over Time - Line Chart */}
-            <div className="card">
-              <h4 style={{marginBottom:'1rem', color:'var(--g1)'}}>📈 Cancer Detection Trends (2023-2024)</h4>
-              <div style={{height:'200px', position:'relative'}}>
-                <svg width="100%" height="200" viewBox="0 0 400 200" style={{overflow:'visible'}}>
-                  <defs>
-                    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--g3)"/>
-                      <stop offset="100%" stopColor="var(--g1)"/>
-                    </linearGradient>
-                  </defs>
-                  <polyline fill="none" stroke="url(#lineGrad)" strokeWidth="3" 
-                    points="0,180 50,160 100,140 150,120 200,100 250,80 300,60 350,40 400,20"/>
-                  {['Jan','Mar','May','Jul','Sep','Nov'].map((m,i)=>(
-                    <text key={i} x={i*66.7} y={195} fontSize="10" fill="var(--muted)" textAnchor="middle">{m}</text>
-                  ))}
-                  {[20,40,60,80,100,120,140,160,180].map((y,i)=>(
-                    <circle key={i} cx={i*50} cy={y} r="4" fill="var(--g1)" style={{filter:'drop-shadow(0 0 4px var(--g1))'}}/>
-                  ))}
-                </svg>
-              </div>
-              <div style={{textAlign:'center', marginTop:'1rem', fontSize:'.8rem', color:'var(--muted)'}}>
-                Early detection rate improving by 15% YoY
-              </div>
-            </div>
-
             {/* Detection Accuracy - Area Chart */}
             <div className="card">
               <h4 style={{marginBottom:'1rem', color:'var(--g1)'}}>🎯 AI Accuracy Over Time</h4>
@@ -418,6 +836,8 @@ export function Insights() {
               </div>
             </div>
 
+
+
           </div>
         </div>
       </div>
@@ -439,77 +859,232 @@ export function Compare() {
   },[])
   const a = reports[idxA]; const b = reports[idxB]
   const sc = s => s==='High'||s==='Severe'?'badge-red':s==='Moderate'?'badge-yellow':'badge-green'
-  const Card = ({r,label})=>(
-    <div className="card">
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
-        <h3>{label}</h3>
-        {r&&<span className="badge badge-blue">{new Date(r.date).toLocaleDateString()}</span>}
+  const [hoveredCard, setHoveredCard] = React.useState(null)
+  const Card = ({r,label,id})=>(
+    <div 
+      style={{
+        background:'linear-gradient(135deg, rgba(0,255,136,.06), rgba(0,229,255,.03))',
+        border: hoveredCard===id ? '1px solid rgba(0,255,136,.35)' : '1px solid rgba(0,255,136,.12)',
+        borderRadius:20,
+        padding:'1.8rem',
+        backdropFilter:'blur(15px)',
+        transition:'all .4s cubic-bezier(0.23, 1, 0.320, 1)',
+        transform: hoveredCard===id ? 'translateY(-6px) scale(1.02)' : 'none',
+        boxShadow: hoveredCard===id ? '0 25px 60px rgba(0,255,136,.15)' : '0 8px 25px rgba(0,255,136,.05)',
+        position:'relative',
+        overflow:'hidden'
+      }}
+      onMouseEnter={()=>setHoveredCard(id)}
+      onMouseLeave={()=>setHoveredCard(null)}
+    >
+      {hoveredCard===id && <div style={{
+        position:'absolute',top:0,left:'-100%',width:'200%',height:'100%',
+        background:'linear-gradient(90deg, transparent, rgba(0,255,136,.06), transparent)',
+        animation:'shimmer 1.5s ease-out',pointerEvents:'none'
+      }}/>}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.2rem'}}>
+        <h3 style={{
+          margin:0,fontSize:'1.1rem',
+          background:'linear-gradient(135deg, var(--g1), var(--g2))',
+          WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',fontWeight:700
+        }}>{label}</h3>
+        {r&&<span style={{
+          fontSize:'.72rem',padding:'.25rem .7rem',borderRadius:8,
+          background:'rgba(0,229,255,.12)',border:'1px solid rgba(0,229,255,.25)',color:'var(--g2)',fontWeight:600
+        }}>{new Date(r.date).toLocaleDateString()}</span>}
       </div>
       {r?(<>
         {(r.detections||[]).map((d,i)=>(
-          <div key={i} className="result-row">
-            <span className="result-label">{d.label}</span>
+          <div key={i} style={{
+            display:'flex',justifyContent:'space-between',alignItems:'center',
+            padding:'.7rem .9rem',background:'rgba(0,255,136,.04)',
+            border:'1px solid rgba(0,255,136,.08)',borderRadius:10,marginBottom:'.5rem',
+            transition:'all .2s'
+          }}>
+            <span style={{fontWeight:600,fontSize:'.85rem'}}>{d.label}</span>
             <span className={`badge ${sc(d.severity)}`}>{d.severity}</span>
           </div>
         ))}
-        <div className="result-row"><span className="result-label">Overall</span><span className={`badge ${sc(r.overall_severity)}`}>{r.overall_severity}</span></div>
-        <div className="result-row"><span className="result-label">Confidence</span><span style={{color:'var(--g1)',fontWeight:600}}>{r.confidence}%</span></div>
-      </>):<p style={{color:'var(--muted)',fontSize:'.83rem'}}>Select a report</p>}
+        <div style={{
+          display:'flex',justifyContent:'space-between',alignItems:'center',
+          padding:'.7rem .9rem',background:'rgba(0,255,136,.06)',
+          border:'1px solid rgba(0,255,136,.12)',borderRadius:10,marginBottom:'.5rem'
+        }}><span style={{fontWeight:600,fontSize:'.85rem',color:'var(--muted)'}}>Overall</span><span className={`badge ${sc(r.overall_severity)}`}>{r.overall_severity}</span></div>
+        <div style={{
+          display:'flex',justifyContent:'space-between',alignItems:'center',
+          padding:'.7rem .9rem',background:'rgba(0,255,136,.06)',
+          border:'1px solid rgba(0,255,136,.12)',borderRadius:10
+        }}><span style={{fontWeight:600,fontSize:'.85rem',color:'var(--muted)'}}>Confidence</span><span style={{color:'var(--g1)',fontWeight:700,fontSize:'1rem'}}>{r.confidence}%</span></div>
+      </>):<p style={{color:'var(--muted)',fontSize:'.83rem',textAlign:'center',padding:'2rem 0'}}>Select a report</p>}
     </div>
   )
   return (
     <div className="page-content">
       <div className="section-wrap">
-        <h2 style={{marginBottom:'.3rem'}}>Compare Reports</h2>
-        <p style={{color:'var(--muted)',fontSize:'.85rem',marginBottom:'2rem'}}>Select two reports to track disease progression.</p>
+        {/* Enhanced Header */}
+        <div style={{
+          background:'linear-gradient(135deg, rgba(0,255,136,.08), rgba(0,229,255,.05))',
+          border:'1px solid rgba(0,255,136,.15)',
+          borderRadius:'24px',
+          padding:'2.5rem',
+          backdropFilter:'blur(20px)',
+          position:'relative',
+          overflow:'hidden',
+          marginBottom:'2rem',
+          boxShadow:'0 20px 60px rgba(0,255,136,.1), inset 0 1px 0 rgba(255,255,255,.1)'
+        }}>
+          <div style={{
+            position:'absolute',inset:0,
+            background:'radial-gradient(circle at 20% 50%, rgba(0,229,255,.1) 0%, transparent 50%)',
+            pointerEvents:'none'
+          }}/>
+          <div style={{position:'relative',zIndex:1}}>
+            <div style={{display:'flex',alignItems:'center',gap:'1rem',marginBottom:'.8rem'}}>
+              <span style={{fontSize:'2rem',animation:'float 3s ease-in-out infinite',display:'inline-block'}}>⚖️</span>
+              <h1 style={{
+                margin:0,
+                background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+                fontSize:'2.2rem',fontWeight:800,fontFamily:"'Syne',sans-serif"
+              }}>Compare Reports</h1>
+            </div>
+            <p style={{color:'var(--muted)',fontSize:'.9rem',margin:0}}>Select two reports to track disease progression</p>
+          </div>
+        </div>
+
         {reports.length<2?(
-          <div className="alert alert-info"><span>ℹ️</span><span>You need at least 2 saved reports. Upload and analyze more scans first.</span></div>
+          <div style={{
+            background:'linear-gradient(135deg, rgba(0,229,255,.08), rgba(0,255,136,.05))',
+            border:'1px solid rgba(0,229,255,.2)',
+            borderRadius:16,padding:'1.5rem',
+            display:'flex',alignItems:'center',gap:'.8rem',
+            backdropFilter:'blur(10px)'
+          }}><span>ℹ️</span><span style={{color:'var(--muted)'}}>You need at least 2 saved reports. Upload and analyze more scans first.</span></div>
         ):(
           <>
-            <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',gap:'1rem',alignItems:'end',marginBottom:'2rem'}}>
+            {/* Selector Row */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',gap:'1.5rem',alignItems:'end',marginBottom:'2rem'}}>
               <div>
-                <label>Report A (Baseline)</label>
-                <select value={idxA} onChange={e=>setIdxA(+e.target.value)}>
+                <label style={{
+                  display:'block',marginBottom:'.5rem',fontSize:'.8rem',
+                  color:'var(--g1)',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase'
+                }}>Report A (Baseline)</label>
+                <select value={idxA} onChange={e=>setIdxA(+e.target.value)} style={{
+                  width:'100%',padding:'.7rem 1rem',
+                  background:'rgba(0,255,136,.05)',
+                  border:'1px solid rgba(0,255,136,.2)',
+                  borderRadius:12,color:'var(--text)',
+                  backdropFilter:'blur(10px)',
+                  outline:'none',
+                  transition:'all .3s',
+                  fontSize:'.85rem'
+                }}>
                   {reports.map((r,i)=><option key={r.scan_id} value={i}>{r.scan_id} — {new Date(r.date).toLocaleDateString()}</option>)}
                 </select>
               </div>
               <div style={{display:'flex',flexDirection:'column',alignItems:'center',paddingBottom:'.5rem'}}>
-                <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,var(--g3),var(--g2))',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:'.85rem',color:'#020c06'}}>VS</div>
+                <div style={{
+                  width:52,height:52,borderRadius:'50%',
+                  background:'linear-gradient(135deg,var(--g3),var(--g2))',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:'.9rem',color:'#020c06',
+                  boxShadow:'0 8px 25px rgba(0,200,83,.35), 0 0 20px rgba(0,255,136,.2)',
+                  animation:'pulse 2s ease-in-out infinite'
+                }}>VS</div>
               </div>
               <div>
-                <label>Report B (Latest)</label>
-                <select value={idxB} onChange={e=>setIdxB(+e.target.value)}>
+                <label style={{
+                  display:'block',marginBottom:'.5rem',fontSize:'.8rem',
+                  color:'var(--g2)',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase'
+                }}>Report B (Latest)</label>
+                <select value={idxB} onChange={e=>setIdxB(+e.target.value)} style={{
+                  width:'100%',padding:'.7rem 1rem',
+                  background:'rgba(0,255,136,.05)',
+                  border:'1px solid rgba(0,255,136,.2)',
+                  borderRadius:12,color:'var(--text)',
+                  backdropFilter:'blur(10px)',
+                  outline:'none',
+                  transition:'all .3s',
+                  fontSize:'.85rem'
+                }}>
                   {reports.map((r,i)=><option key={r.scan_id} value={i}>{r.scan_id} — {new Date(r.date).toLocaleDateString()}</option>)}
                 </select>
               </div>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',gap:'1rem'}}>
-              <Card r={a} label="Report A"/>
+
+            {/* Cards Comparison */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',gap:'1.5rem'}}>
+              <Card r={a} label="Report A" id="a"/>
               <div style={{display:'flex',flexDirection:'column',alignItems:'center',paddingTop:'3rem',gap:'1rem'}}>
-                <div style={{flex:1,width:1,background:'var(--border)'}}/>
-                <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,var(--g3),var(--g2))',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:'.85rem',color:'#020c06'}}>VS</div>
-                <div style={{flex:1,width:1,background:'var(--border)'}}/>
+                <div style={{flex:1,width:2,background:'linear-gradient(to bottom, rgba(0,255,136,.3), transparent)',borderRadius:2}}/>
+                <div style={{
+                  width:48,height:48,borderRadius:'50%',
+                  background:'linear-gradient(135deg,var(--g3),var(--g2))',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:'.85rem',color:'#020c06',
+                  boxShadow:'0 8px 25px rgba(0,200,83,.35), 0 0 20px rgba(0,255,136,.2)'
+                }}>VS</div>
+                <div style={{flex:1,width:2,background:'linear-gradient(to bottom, transparent, rgba(0,255,136,.3))',borderRadius:2}}/>
               </div>
-              <Card r={b} label="Report B"/>
+              <Card r={b} label="Report B" id="b"/>
             </div>
+
+            {/* Analysis & Recommendations */}
             {a&&b&&(
-              <div style={{marginTop:'2rem'}}>
-                <h3 style={{marginBottom:'1rem',color:'var(--text)'}}>Analysis & Recommendations</h3>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:'1rem'}}>
-                  <div className="card" style={{border:'1px solid var(--border)',borderRadius:12,padding:'1.5rem'}}>
-                    <h4 style={{marginBottom:'1rem',color:'var(--g1)',fontSize:'1rem'}}>📊 Comparison Summary</h4>
+              <div style={{marginTop:'2.5rem'}}>
+                <div style={{display:'flex',alignItems:'center',gap:'.8rem',marginBottom:'1.5rem'}}>
+                  <span style={{fontSize:'1.3rem',animation:'pulse 2s ease-in-out infinite'}}>🔬</span>
+                  <h3 style={{
+                    margin:0,
+                    background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                    WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+                    fontSize:'1.3rem',fontWeight:700
+                  }}>Analysis & Recommendations</h3>
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:'1.5rem'}}>
+                  {/* Comparison Summary Card */}
+                  <div style={{
+                    background:'linear-gradient(135deg, rgba(0,255,136,.06), rgba(0,229,255,.03))',
+                    border:'1px solid rgba(0,255,136,.15)',
+                    borderRadius:20,padding:'1.8rem',
+                    backdropFilter:'blur(15px)',
+                    boxShadow:'0 8px 25px rgba(0,255,136,.06)',
+                    transition:'all .3s',
+                    position:'relative',overflow:'hidden'
+                  }}
+                    onMouseOver={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.boxShadow='0 20px 50px rgba(0,255,136,.12)'}}
+                    onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 8px 25px rgba(0,255,136,.06)'}}
+                  >
+                    <h4 style={{
+                      marginBottom:'1.2rem',fontSize:'1rem',
+                      background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                      WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+                      fontWeight:700
+                    }}>📊 Comparison Summary</h4>
                     <ul style={{listStyle:'none',padding:0,margin:0}}>
-                      <li style={{marginBottom:'.5rem',fontSize:'.9rem'}}>
-                        <strong>Reports:</strong> {a.scan_id} vs {b.scan_id}
+                      <li style={{
+                        marginBottom:'.6rem',fontSize:'.88rem',
+                        padding:'.5rem .7rem',background:'rgba(0,255,136,.04)',
+                        borderRadius:8,border:'1px solid rgba(0,255,136,.08)'
+                      }}>
+                        <strong style={{color:'var(--g1)'}}>Reports:</strong> {a.scan_id} vs {b.scan_id}
                       </li>
                       {a.confidence!==b.confidence&&(
-                        <li style={{marginBottom:'.5rem',fontSize:'.9rem'}}>
-                          <strong>Confidence:</strong> {a.confidence}% → {b.confidence}%
+                        <li style={{
+                          marginBottom:'.6rem',fontSize:'.88rem',
+                          padding:'.5rem .7rem',background:'rgba(0,255,136,.04)',
+                          borderRadius:8,border:'1px solid rgba(0,255,136,.08)'
+                        }}>
+                          <strong style={{color:'var(--g1)'}}>Confidence:</strong> {a.confidence}% → {b.confidence}%
                         </li>
                       )}
                       {a.overall_severity!==b.overall_severity&&(
-                        <li style={{marginBottom:'.5rem',fontSize:'.9rem'}}>
-                          <strong>Severity:</strong> {a.overall_severity} → {b.overall_severity}
+                        <li style={{
+                          marginBottom:'.6rem',fontSize:'.88rem',
+                          padding:'.5rem .7rem',background:'rgba(0,255,136,.04)',
+                          borderRadius:8,border:'1px solid rgba(0,255,136,.08)'
+                        }}>
+                          <strong style={{color:'var(--g1)'}}>Severity:</strong> {a.overall_severity} → {b.overall_severity}
                         </li>
                       )}
                       {(() => {
@@ -517,15 +1092,36 @@ export function Compare() {
                         const stonesB = (b.detections || []).filter(d => d.label === 'Kidney Stone').length;
                         const diff = stonesB - stonesA;
                         return diff !== 0 && (
-                          <li style={{marginBottom:'.5rem',fontSize:'.9rem'}}>
-                            <strong>Kidney Stones:</strong> {stonesA} → {stonesB} ({diff > 0 ? '+' : ''}{diff})
+                          <li style={{
+                            marginBottom:'.6rem',fontSize:'.88rem',
+                            padding:'.5rem .7rem',background:'rgba(0,255,136,.04)',
+                            borderRadius:8,border:'1px solid rgba(0,255,136,.08)'
+                          }}>
+                            <strong style={{color:'var(--g1)'}}>Kidney Stones:</strong> {stonesA} → {stonesB} ({diff > 0 ? '+' : ''}{diff})
                           </li>
                         );
                       })()}
                     </ul>
                   </div>
-                  <div className="card" style={{border:'1px solid var(--border)',borderRadius:12,padding:'1.5rem'}}>
-                    <h4 style={{marginBottom:'1rem',color:'var(--g1)',fontSize:'1rem'}}>💡 Recommendations</h4>
+                  {/* Recommendations Card */}
+                  <div style={{
+                    background:'linear-gradient(135deg, rgba(0,229,255,.06), rgba(0,255,136,.03))',
+                    border:'1px solid rgba(0,229,255,.15)',
+                    borderRadius:20,padding:'1.8rem',
+                    backdropFilter:'blur(15px)',
+                    boxShadow:'0 8px 25px rgba(0,229,255,.06)',
+                    transition:'all .3s',
+                    position:'relative',overflow:'hidden'
+                  }}
+                    onMouseOver={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.boxShadow='0 20px 50px rgba(0,229,255,.12)'}}
+                    onMouseOut={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 8px 25px rgba(0,229,255,.06)'}}
+                  >
+                    <h4 style={{
+                      marginBottom:'1.2rem',fontSize:'1rem',
+                      background:'linear-gradient(135deg, var(--g2), var(--g1))',
+                      WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+                      fontWeight:700
+                    }}>💡 Recommendations</h4>
                     <ul style={{listStyle:'none',padding:0,margin:0}}>
                       {(() => {
                         const severityWorse = ['Low', 'Moderate', 'High', 'Severe'].indexOf(b.overall_severity) > ['Low', 'Moderate', 'High', 'Severe'].indexOf(a.overall_severity);
@@ -553,7 +1149,17 @@ export function Compare() {
                         recommendations.push('🏥 Always consult physician for clinical interpretation');
                         
                         return recommendations.map((rec, i) => (
-                          <li key={i} style={{marginBottom:'.5rem',fontSize:'.9rem',lineHeight:1.4}}>
+                          <li key={i} style={{
+                            marginBottom:'.6rem',fontSize:'.88rem',lineHeight:1.5,
+                            padding:'.5rem .7rem',
+                            background:'rgba(0,229,255,.04)',
+                            borderRadius:8,
+                            border:'1px solid rgba(0,229,255,.08)',
+                            transition:'all .2s'
+                          }}
+                            onMouseOver={e=>e.currentTarget.style.background='rgba(0,229,255,.08)'}
+                            onMouseOut={e=>e.currentTarget.style.background='rgba(0,229,255,.04)'}
+                          >
                             {rec}
                           </li>
                         ));
@@ -574,17 +1180,21 @@ export function Compare() {
 //  PRICING PAGE
 // ═══════════════════════════════════════════
 export function Pricing() {
-  const [selectedPlan, setSelectedPlan] = useState(null)
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const toast = useToast()
+  
   const plans = [
-    {name:'Free',price:'$0',period:'forever',badge:'badge-green',features:[[true,'5 scans/month'],[true,'Basic 3D view'],[true,'AI diagnostic report'],[true,'3 months history'],[false,'Text to 3D'],[false,'PDF export'],[false,'Compare reports']]},
-    {name:'Pro',price:'$29',period:'/month',badge:'badge-green',featured:true,features:[[true,'Unlimited scans'],[true,'Full 3D interactive'],[true,'Advanced AI diagnostics'],[true,'Unlimited history'],[true,'Text to 3D (50/mo)'],[true,'PDF export'],[true,'Report comparison']]},
-    {name:'Enterprise',price:'Custom',period:'contact us',badge:'badge-blue',features:[[true,'Unlimited everything'],[true,'HIPAA BAA'],[true,'EHR integration'],[true,'Dedicated GPU'],[true,'Text to 3D unlimited'],[true,'SLA 99.9%'],[true,'Custom model training']]},
+    {name:'Free',price:'$0',period:'forever',badge:'badge-green',features:[[true,'10 scans/day'],[true,'10 text-to-3D/day'],[true,'Basic 3D view'],[true,'AI diagnostic report'],[true,'30 days history'],[false,'PDF export'],[false,'Compare reports'],[false,'Priority support']]},
+    {name:'Pro',price:'$29',period:'/month',badge:'badge-green',featured:true,features:[[true,'Unlimited scans'],[true,'Unlimited text-to-3D'],[true,'Full 3D interactive'],[true,'Advanced AI diagnostics'],[true,'Unlimited history'],[true,'PDF export'],[true,'Report comparison'],[true,'Priority support']]},
+    {name:'Enterprise',price:'Custom',period:'contact us',badge:'badge-blue',features:[[true,'Unlimited everything'],[true,'HIPAA BAA'],[true,'EHR integration'],[true,'Dedicated GPU'],[true,'Text to 3D unlimited'],[true,'SLA 99.9%'],[true,'Custom model training'],[true,'Dedicated support']]},
   ]
+  
   return (
     <div className="page-content">
       <div className="section-wrap" style={{textAlign:'center'}}>
         <h2 style={{marginBottom:'.5rem'}}>Simple, Transparent Pricing</h2>
-        <p style={{color:'var(--muted)',fontSize:'.9rem',marginBottom:'3rem'}}>Start free. Upgrade when you need more.</p>
+        <p style={{color:'var(--muted)',fontSize:'.9rem',marginBottom:'3rem'}}>Start free today. Upgrade anytime for more features.</p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'1.2rem',maxWidth:900,margin:'0 auto'}}>
           {plans.map(p=>(
             <div key={p.name} style={{
@@ -598,6 +1208,7 @@ export function Pricing() {
               <span className={`badge ${p.badge}`}>{p.name}</span>
               <div style={{fontFamily:"'Syne',sans-serif",fontSize:'2.5rem',fontWeight:800,margin:'1rem 0 .3rem',background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{p.price}</div>
               <div style={{fontSize:'.8rem',color:'var(--muted)'}}>{p.period}</div>
+              
               <ul style={{listStyle:'none',margin:'1.5rem 0',textAlign:'left'}}>
                 {p.features.map(([ok,txt],i)=>(
                   <li key={i} style={{padding:'.5rem 0',fontSize:'.85rem',display:'flex',alignItems:'center',gap:'.6rem',borderBottom:'1px solid rgba(255,255,255,.04)',opacity:ok?1:.5}}>
@@ -605,27 +1216,22 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              <button className={`btn ${p.featured?'btn-primary':'btn-outline'}`} style={{width:'100%',justifyContent:'center'}}
-                onClick={() => setSelectedPlan(p)}>
-                {p.name==='Enterprise'?'Contact Sales':p.name==='Free'?'Get Started':'Upgrade to Pro'}
-              </button>
+              
+              {user?.plan === p.name.toLowerCase() ? (
+                <button className="btn btn-outline" style={{width:'100%',justifyContent:'center',opacity:0.6,cursor:'default'}}>
+                  ✓ Current Plan
+                </button>
+              ) : (
+                <button className={`btn ${p.featured?'btn-primary':'btn-outline'}`} style={{width:'100%',justifyContent:'center'}}
+                  disabled
+                  title="Contact us for premium plans"
+                >
+                  {p.name==='Enterprise'?'Contact Sales':p.name==='Free'?'Get Started':'Coming Soon'}
+                </button>
+              )}
             </div>
           ))}
         </div>
-        {selectedPlan && selectedPlan.name !== 'Free' && selectedPlan.name !== 'Enterprise' && (
-          <div style={{maxWidth:500, margin:'2rem auto', padding:'2rem', background:'var(--dark2)', border:'1px solid var(--border)', borderRadius:16, boxShadow:'0 4px 20px rgba(0,0,0,0.3)'}}>
-            <h3 style={{color:'var(--text)', marginBottom:'1rem'}}>Payment for {selectedPlan.name}</h3>
-            <form style={{display:'grid', gap:'1rem', marginTop:'1rem'}}>
-              <input type="text" placeholder="Card Number" style={{padding:'.75rem', border:'1px solid var(--border)', borderRadius:8, background:'var(--dark)', color:'var(--text)', fontSize:'1rem'}} />
-              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem'}}>
-                <input type="text" placeholder="MM/YY" style={{padding:'.75rem', border:'1px solid var(--border)', borderRadius:8, background:'var(--dark)', color:'var(--text)', fontSize:'1rem'}} />
-                <input type="text" placeholder="CVV" style={{padding:'.75rem', border:'1px solid var(--border)', borderRadius:8, background:'var(--dark)', color:'var(--text)', fontSize:'1rem'}} />
-              </div>
-              <input type="text" placeholder="Name on Card" style={{padding:'.75rem', border:'1px solid var(--border)', borderRadius:8, background:'var(--dark)', color:'var(--text)', fontSize:'1rem'}} />
-              <button type="submit" className="btn btn-primary" style={{width:'100%', justifyContent:'center', padding:'.75rem', fontSize:'1rem'}}>Pay {selectedPlan.price}{selectedPlan.period}</button>
-            </form>
-          </div>
-        )}
       </div>
     </div>
   )

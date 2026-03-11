@@ -76,25 +76,34 @@ ORGANS_CONFIG = {
 
 
 def validate_organ_image(image_path, organ: str = "Kidney"):
-    """Validate if the image contains the requested organ anatomy"""
+    """Validate if the image contains the CORRECT organ anatomy (BALANCED validation)"""
     model = get_yolo(organ)
     if not model:
-        return True
+        return False
 
     try:
-        results = model.predict(image_path, imgsz=640, conf=0.1, verbose=False)
-        total_detections = 0
-        for r in results:
-            if r.boxes is not None:
-                total_detections += len(r.boxes)
-            if r.masks is not None:
-                total_detections += len(r.masks)
+        # Balanced: 0.35 confidence (good balance between strictness and acceptance)
+        results = model.predict(image_path, imgsz=640, conf=0.35, verbose=False)
         
-        # If we find at least some detections, it's likely a kidney image
-        return total_detections > 0
+        total_detections = 0
+        
+        for r in results:
+            # Count masks (most reliable)
+            if r.masks is not None and len(r.masks.data) > 0:
+                total_detections += len(r.masks.data)
+            # Count boxes
+            elif r.boxes is not None and len(r.boxes) > 0:
+                total_detections += len(r.boxes)
+        
+        # BALANCED: Require at least 1 detection with good confidence (0.35+)
+        # This allows valid organ images while rejecting completely wrong organs
+        if total_detections >= 1:
+            return True
+        
+        return False
     except Exception as e:
         print(f"Validation error: {e}")
-        return True
+        return False
 
 
 def run_detection(image_path, organ: str = "Kidney"):

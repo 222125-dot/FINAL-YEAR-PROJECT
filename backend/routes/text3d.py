@@ -5,8 +5,11 @@ POST /api/text3d/generate
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 import os, uuid, shutil
+from sqlalchemy.orm import Session
+from datetime import datetime
 
 from routes.auth import get_current_user, User
+from database import get_db
 
 router    = APIRouter()
 OUT_DIR   = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "output")
@@ -95,7 +98,7 @@ def copy_model_to_output(model_data):
 
 
 @router.post("/generate")
-def generate(req: T3DRequest, current_user: User = Depends(get_current_user)):
+def generate(req: T3DRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not req.prompt.strip():
         raise HTTPException(400, "Prompt is empty")
     
@@ -110,5 +113,5 @@ def generate(req: T3DRequest, current_user: User = Depends(get_current_user)):
         "description": model_data["description"],
         "organ_type": model_data["organ_type"],
         "anomalies": model_data["anomalies"],
-        "prompt": req.prompt
+        "prompt": req.prompt,
     }

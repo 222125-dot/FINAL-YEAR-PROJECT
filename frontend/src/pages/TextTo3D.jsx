@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { text3dAPI } from '../utils/api'
 import { useToast } from '../utils/ToastContext'
 import ModelViewer from '../components/ModelViewer'
@@ -21,6 +22,7 @@ export default function TextTo3D() {
   const [result,   setResult]   = useState(null)
   const [history,  setHistory]  = useState([])
   const toast = useToast()
+  const navigate = useNavigate()
 
   const generate = async () => {
     if (!prompt.trim()) { toast('Enter a prompt first', 'warn'); return }
@@ -32,17 +34,20 @@ export default function TextTo3D() {
       setHistory(h => [res.data, ...h].slice(0, 5))
       toast('✅ 3D model generated!')
     } catch (e) {
-      toast(e.response?.data?.detail || 'Generation failed', 'error')
+      const errorMsg = e.response?.data?.detail || 'Generation failed'
+      toast(errorMsg, 'error')
     } finally { setBusy(false) }
   }
 
   return (
     <div className="page-content">
       <div className="section-wrap">
-        <h2 style={{ marginBottom:'.3rem' }}>Text to 3D Model</h2>
-        <p style={{ color:'var(--muted)', fontSize:'.85rem', marginBottom:'2rem' }}>
-          Type the name of an organ — get the corresponding 3D model instantly.
-        </p>
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ marginBottom:'.3rem' }}>Text to 3D Model</h2>
+          <p style={{ color:'var(--muted)', fontSize:'.85rem', marginBottom:'0' }}>
+            Type the name of an organ — get the corresponding 3D model instantly.
+          </p>
+        </div>
 
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1.5fr', gap:'1.5rem', alignItems:'start' }}>
           {/* ── LEFT: PROMPT ── */}

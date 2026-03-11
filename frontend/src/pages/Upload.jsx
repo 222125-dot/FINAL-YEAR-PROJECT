@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { analyzeAPI } from '../utils/api'
 import { useToast } from '../utils/ToastContext'
+import { useAuth } from '../utils/AuthContext'
 import ModelViewer from '../components/ModelViewer'
 
 const SEVERITY_COLOR = {
@@ -15,6 +16,7 @@ const SEVERITY_WIDTH = { Severe: '95%', High: '75%', Moderate: '45%', Low: '20%'
 export default function Upload() {
   const toast    = useToast()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const inputRef = useRef()
 
   const [file,        setFile]        = useState(null)
@@ -57,7 +59,8 @@ export default function Upload() {
       setResult(res.data)
       toast(`✅ Analysis done — ${res.data.total_found} condition(s) detected`)
     } catch (e) {
-      toast(e.response?.data?.detail || 'Analysis failed', 'error')
+      const errorMsg = e.response?.data?.detail || 'Analysis failed'
+      toast(errorMsg, 'error')
     } finally {
       setAnalyzing(false)
     }
@@ -72,10 +75,12 @@ export default function Upload() {
   return (
     <div className="page-content">
       <div className="section-wrap">
-        <h2 style={{ marginBottom:'.4rem' }}>Upload {organ} Scan</h2>
-        <p style={{ color:'var(--muted)', fontSize:'.88rem', marginBottom:'2rem' }}>
-          Upload your kidney scan — YOLO AI detects conditions and maps them to the 3D kidney mesh.
-        </p>
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ marginBottom:'.4rem' }}>Upload {organ} Scan</h2>
+          <p style={{ color:'var(--muted)', fontSize:'.88rem', marginBottom:'0' }}>
+            Upload your kidney scan — YOLO AI detects conditions and maps them to the 3D kidney mesh.
+          </p>
+        </div>
 
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1.5rem', alignItems:'start' }}>
           {/* ── LEFT ── */}
