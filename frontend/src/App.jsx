@@ -14,6 +14,7 @@ const Insights = lazy(() => import('./pages/Insights'))
 const TextTo3D = lazy(() => import('./pages/TextTo3D'))
 const Compare  = lazy(() => import('./pages/Compare'))
 const Pricing  = lazy(() => import('./pages/Pricing'))
+const About    = lazy(() => import('./pages/About'))
 const Login    = lazy(() => import('./pages/Login'))
 
 // RELIABILITY: Error Boundary — catches render errors, shows fallback instead of crash
@@ -94,6 +95,7 @@ function AppLayout() {
           <Route path="/text3d"   element={<ProtectedRoute><TextTo3D /></ProtectedRoute>} />
           <Route path="/compare"  element={<ProtectedRoute><Compare /></ProtectedRoute>} />
           <Route path="/pricing"  element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
+          <Route path="/about"    element={<ProtectedRoute><About /></ProtectedRoute>} />
           <Route path="*"         element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

@@ -15,7 +15,7 @@ from collections import defaultdict
 load_dotenv()
 
 from database import init_db
-from routes import auth, analyze, reports, text3d
+from routes import auth, analyze, reports, text3d, queries
 
 # ─── LOGGING (Reliability: error detection & monitoring) ──────────────────────
 logging.basicConfig(
@@ -113,6 +113,7 @@ app.include_router(auth.router,    prefix="/api/auth",    tags=["Auth"])
 app.include_router(analyze.router, prefix="/api",         tags=["Analyze"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(text3d.router,  prefix="/api/text3d",  tags=["Text3D"])
+app.include_router(queries.router, prefix="/api/queries", tags=["Queries"])
 
 
 @app.get("/")

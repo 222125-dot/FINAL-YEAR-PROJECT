@@ -60,6 +60,7 @@ export default function Navbar() {
         <NavLink to="/text3d"   style={linkStyle}>Text to 3D</NavLink>
         <NavLink to="/compare"  style={linkStyle}>Compare</NavLink>
         <NavLink to="/pricing"  style={linkStyle}>Pricing</NavLink>
+        <NavLink to="/about"    style={linkStyle}>About</NavLink>
       </div>
 
       {/* Right */}

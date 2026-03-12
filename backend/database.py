@@ -76,6 +76,18 @@ class Report(Base):
     recommendations   = Column(JSON,        default=list)
 
 
+class QueryMessage(Base):
+    __tablename__ = "query_messages"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    username   = Column(String(80),  nullable=False, index=True)
+    full_name  = Column(String(120), default="")
+    email      = Column(String(120), nullable=False, index=True)
+    message    = Column(Text,         nullable=False)
+    source     = Column(String(50),   default="about")
+    created_at = Column(DateTime,     default=datetime.utcnow)
+
+
 # ─── CREATE ALL TABLES ────────────────────────────────────────────────────
 def init_db():
     """Call this once at startup to create all tables."""

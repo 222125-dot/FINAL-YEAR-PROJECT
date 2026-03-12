@@ -75,3 +75,9 @@ export const text3dAPI = {
   generate: (data) => api.post('/text3d/generate', data),
 }
 
+// ── Queries ─────────────────────────────────────
+export const queriesAPI = {
+  create: (data) => api.post('/queries/', data),
+  list:   () => api.get('/queries/'),
+}
+

@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../utils/AuthContext'
 import { useToast } from '../utils/ToastContext'
-import { authAPI } from '../utils/api'
+import { queriesAPI } from '../utils/api'
 
 export function Home() {
   const navigate = useNavigate()
@@ -414,7 +414,6 @@ export function Insights() {
   const kpis = [
     {label:'Total Cases Analyzed',val:'10,248',change:'↑ 12.4% this month',up:true,icon:'📊'},
     {label:'Cancer Detection Rate',val:'6.2%',change:'↑ 0.8% vs last year',up:false,color:'var(--danger)',icon:'🎯'},
-    {label:'Avg Confidence Score',val:'93.7%',change:'↑ 2.1% improvement',up:true,icon:'✅'},
     {label:'False Positive Rate',val:'1.8%',change:'↓ 0.3% reduction',up:true,color:'var(--warn)',icon:'⚡'},
   ]
   const bars = [
@@ -425,27 +424,45 @@ export function Insights() {
     {label:'Other',val:15,count:140,color:'rgba(255,255,255,.2)'},
   ]
   return (
-    <div className="page-content">
+    <div
+      className="page-content"
+      style={{
+        '--g1':'#2dd4bf',
+        '--g2':'#38bdf8',
+        '--g3':'#34d399',
+        '--border':'rgba(45,212,191,.24)',
+        '--card':'rgba(45,212,191,.06)',
+        '--muted':'rgba(216,243,255,.68)',
+      }}
+    >
       <div className="section-wrap">
         {/* Enhanced Header */}
-        <div style={{marginBottom:'3rem',perspective:'1000px'}}>
+        <div style={{marginBottom:'3rem'}}>
           <div style={{
-            background:'linear-gradient(135deg, rgba(0,255,136,.08), rgba(0,229,255,.05))',
-            border:'1px solid rgba(0,255,136,.15)',
+            background:'linear-gradient(155deg, rgba(0,255,136,.06), rgba(0,229,255,.03))',
+            border:'1px solid rgba(0,255,136,.18)',
             borderRadius:'24px',
             padding:'2.5rem',
-            backdropFilter:'blur(20px)',
+            backdropFilter:'blur(14px)',
             position:'relative',
             overflow:'hidden',
             transform:'translateZ(0)',
-            boxShadow:'0 20px 60px rgba(0,255,136,.1), inset 0 1px 0 rgba(255,255,255,.1)'
+            boxShadow:'0 16px 36px rgba(0,255,136,.08), inset 0 1px 0 rgba(255,255,255,.06)'
           }}>
-            {/* Animated background gradient */}
+            {/* Softer texture overlay */}
             <div style={{
               position:'absolute',
               inset:0,
-              background:'radial-gradient(circle at 20% 50%, rgba(0,255,136,.15) 0%, transparent 50%)',
-              animation:'pulseGlow 8s ease-in-out infinite',
+              background:'radial-gradient(circle at 12% 40%, rgba(0,255,136,.12) 0%, transparent 52%), radial-gradient(circle at 86% 28%, rgba(0,229,255,.08) 0%, transparent 46%)',
+              opacity:.7,
+              pointerEvents:'none'
+            }}/>
+            <div style={{
+              position:'absolute',
+              inset:0,
+              backgroundImage:'linear-gradient(rgba(0,255,136,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,.04) 1px, transparent 1px)',
+              backgroundSize:'26px 26px',
+              opacity:.22,
               pointerEvents:'none'
             }}/>
             {/* Content */}
@@ -468,7 +485,8 @@ export function Insights() {
                   WebkitTextFillColor:'transparent',
                   fontSize:'2.4rem',
                   fontWeight:800,
-                  fontFamily:"'Syne',sans-serif"
+                  fontFamily:"'Poppins',sans-serif",
+                  letterSpacing:'.02em'
                 }}>Health Insights Dashboard</h1>
               </div>
               <p style={{
@@ -526,12 +544,12 @@ export function Insights() {
                   <span style={{fontSize:'.85rem',color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.08em',fontWeight:600}}>
                     {k.label}
                   </span>
-                  <span style={{fontSize:'1.5rem',animation:'rotate 20s linear infinite'}}>
+                  <span style={{fontSize:'1.45rem'}}>
                     {k.icon}
                   </span>
                 </div>
                 <div style={{
-                  fontFamily:"'Syne',sans-serif",
+                  fontFamily:"'Poppins',sans-serif",
                   fontSize:'2.2rem',
                   fontWeight:800,
                   margin:'.5rem 0',
@@ -701,27 +719,6 @@ export function Insights() {
         <div style={{marginTop:'2rem'}}>
           <h3 style={{marginBottom:'1.5rem', color:'var(--text)'}}>Advanced Analytics</h3>
           <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(400px,1fr))', gap:'1.5rem'}}>
-            
-            {/* Detection Accuracy - Area Chart */}
-            <div className="card">
-              <h4 style={{marginBottom:'1rem', color:'var(--g1)'}}>🎯 AI Accuracy Over Time</h4>
-              <div style={{height:'200px', position:'relative'}}>
-                <svg width="100%" height="200" viewBox="0 0 400 200">
-                  <defs>
-                    <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="var(--g1)" stopOpacity="0.3"/>
-                      <stop offset="100%" stopColor="var(--g1)" stopOpacity="0.05"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M0,200 L0,150 Q50,140 100,130 T200,110 T300,90 T400,70 L400,200 Z" 
-                        fill="url(#areaGrad)" stroke="var(--g1)" strokeWidth="2"/>
-                  <path d="M0,150 Q50,140 100,130 T200,110 T300,90 T400,70" 
-                        fill="none" stroke="var(--g1)" strokeWidth="3"/>
-                  <text x="200" y="30" textAnchor="middle" fontSize="12" fill="var(--g1)" fontWeight="600">94.2% Avg Accuracy</text>
-                </svg>
-              </div>
-            </div>
-
             {/* Risk Factors - Stacked Bars */}
             <div className="card">
               <h4 style={{marginBottom:'1rem', color:'var(--g1)'}}>⚠️ Risk Factor Analysis</h4>
@@ -1183,6 +1180,10 @@ export function Pricing() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
+  const priceText = {
+    textShadow:'0 1px 0 rgba(0,0,0,.25), 0 8px 18px rgba(0,0,0,.25)',
+    letterSpacing:'.01em'
+  }
   
   const plans = [
     {name:'Free',price:'$0',period:'forever',badge:'badge-green',features:[[true,'10 scans/day'],[true,'10 text-to-3D/day'],[true,'Basic 3D view'],[true,'AI diagnostic report'],[true,'30 days history'],[false,'PDF export'],[false,'Compare reports'],[false,'Priority support']]},
@@ -1192,24 +1193,52 @@ export function Pricing() {
   
   return (
     <div className="page-content">
-      <div className="section-wrap" style={{textAlign:'center'}}>
-        <h2 style={{marginBottom:'.5rem'}}>Simple, Transparent Pricing</h2>
-        <p style={{color:'var(--muted)',fontSize:'.9rem',marginBottom:'3rem'}}>Start free today. Upgrade anytime for more features.</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'1.2rem',maxWidth:900,margin:'0 auto'}}>
+      <div className="section-wrap" style={{textAlign:'center', maxWidth:1080}}>
+        <div style={{
+          background:'linear-gradient(135deg, rgba(0,255,136,.08), rgba(0,229,255,.05))',
+          border:'1px solid rgba(0,255,136,.15)',
+          borderRadius:'24px',
+          padding:'2.3rem',
+          backdropFilter:'blur(16px)',
+          position:'relative',
+          overflow:'hidden',
+          marginBottom:'2rem',
+          boxShadow:'0 20px 60px rgba(0,255,136,.1), inset 0 1px 0 rgba(255,255,255,.1)'
+        }}>
+          <div style={{
+            position:'absolute',inset:0,
+            background:'radial-gradient(circle at 20% 50%, rgba(0,229,255,.1) 0%, transparent 50%)',
+            pointerEvents:'none'
+          }}/>
+          <div style={{position:'relative',zIndex:1}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'.9rem',marginBottom:'.8rem'}}>
+              <span style={{fontSize:'1.9rem',display:'inline-block'}}>💳</span>
+              <h1 style={{
+                margin:0,
+                background:'linear-gradient(135deg, var(--g1), var(--g2))',
+                WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',
+                fontSize:'2.2rem',fontWeight:800,fontFamily:"'Syne',sans-serif"
+              }}>Simple, Transparent Pricing</h1>
+            </div>
+            <p style={{color:'var(--muted)',fontSize:'.95rem',margin:0}}>Start free today. Upgrade anytime for more features.</p>
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'1.2rem',maxWidth:980,margin:'0 auto',alignItems:'stretch'}}>
           {plans.map(p=>(
             <div key={p.name} style={{
               background:p.featured?'rgba(0,255,136,.06)':'rgba(0,255,136,.03)',
               border:`1px solid ${p.featured?'rgba(0,255,136,.4)':'var(--border)'}`,
               borderRadius:20,padding:'2rem',position:'relative',transition:'transform .3s',
+              display:'flex',flexDirection:'column',height:'100%',
             }}
             onMouseOver={e=>e.currentTarget.style.transform='translateY(-4px)'}
             onMouseOut={e=>e.currentTarget.style.transform='none'}>
               {p.featured&&<div style={{position:'absolute',top:-12,left:'50%',transform:'translateX(-50%)',background:'linear-gradient(135deg,var(--g3),var(--g1))',color:'#020c06',fontSize:'.65rem',fontWeight:800,letterSpacing:'.1em',padding:'.25rem .8rem',borderRadius:20}}>POPULAR</div>}
               <span className={`badge ${p.badge}`}>{p.name}</span>
-              <div style={{fontFamily:"'Syne',sans-serif",fontSize:'2.5rem',fontWeight:800,margin:'1rem 0 .3rem',background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{p.price}</div>
+              <div style={{fontFamily:"'Syne',sans-serif",fontSize:'2.5rem',fontWeight:800,margin:'1rem 0 .3rem',background:'linear-gradient(135deg,var(--g1),var(--g2))',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent', ...priceText}}>{p.price}</div>
               <div style={{fontSize:'.8rem',color:'var(--muted)'}}>{p.period}</div>
               
-              <ul style={{listStyle:'none',margin:'1.5rem 0',textAlign:'left'}}>
+              <ul style={{listStyle:'none',margin:'1.5rem 0',textAlign:'left',flex:1}}>
                 {p.features.map(([ok,txt],i)=>(
                   <li key={i} style={{padding:'.5rem 0',fontSize:'.85rem',display:'flex',alignItems:'center',gap:'.6rem',borderBottom:'1px solid rgba(255,255,255,.04)',opacity:ok?1:.5}}>
                     <span style={{color:ok?'var(--g1)':'var(--muted)'}}>{ok?'✓':'✗'}</span>{txt}
@@ -1232,6 +1261,217 @@ export function Pricing() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════
+//  ABOUT PAGE
+// ═══════════════════════════════════════════
+export function About() {
+  const toast = useToast()
+  const [scrollY, setScrollY] = React.useState(0)
+  const [query, setQuery] = React.useState({ name:'', email:'', message:'' })
+  const [savingQuery, setSavingQuery] = React.useState(false)
+
+  React.useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY || 0)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const orbShiftA = Math.min(scrollY * 0.12, 120)
+  const orbShiftB = Math.min(scrollY * 0.16, 180)
+
+  const updateQuery = (field, value) => {
+    setQuery(prev => ({ ...prev, [field]: value }))
+  }
+
+  const submitQuery = async (e) => {
+    e.preventDefault()
+    if (!query.name.trim() || !query.email.trim() || !query.message.trim()) {
+      toast('Please fill all fields first.', 'warn')
+      return
+    }
+    try {
+      setSavingQuery(true)
+      await queriesAPI.create({
+        name: query.name.trim(),
+        email: query.email.trim(),
+        message: query.message.trim(),
+      })
+      toast('Query submitted and saved successfully.', 'success')
+      setQuery({ name:'', email:'', message:'' })
+    } catch (err) {
+      const msg = err?.response?.data?.detail || 'Could not save query right now.'
+      toast(msg, 'error')
+    } finally {
+      setSavingQuery(false)
+    }
+  }
+
+  return (
+    <div className="page-content" style={{position:'relative', overflow:'hidden'}}>
+      <div style={{position:'fixed', inset:0, pointerEvents:'none', zIndex:0}}>
+        <div style={{
+          position:'absolute', top:`${-30 + orbShiftA}px`, left:'-140px', width:420, height:420, borderRadius:'50%',
+          background:'radial-gradient(circle, rgba(56,189,248,.28) 0%, rgba(56,189,248,0) 72%)',
+          filter:'blur(10px)'
+        }}/>
+        <div style={{
+          position:'absolute', top:`${140 + orbShiftB}px`, right:'-130px', width:460, height:460, borderRadius:'50%',
+          background:'radial-gradient(circle, rgba(45,212,191,.24) 0%, rgba(45,212,191,0) 72%)',
+          filter:'blur(14px)'
+        }}/>
+        <div style={{
+          position:'absolute', inset:0,
+          backgroundImage:'linear-gradient(rgba(56,189,248,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(45,212,191,.05) 1px, transparent 1px)',
+          backgroundSize:'36px 36px',
+          opacity:.45
+        }}/>
+      </div>
+
+      <div className="section-wrap" style={{position:'relative', zIndex:1, maxWidth:1180}}>
+        <section style={{
+          minHeight:'52vh',
+          display:'block',
+          marginTop:'1rem'
+        }}>
+          <div style={{
+            background:'linear-gradient(140deg, rgba(45,212,191,.13), rgba(56,189,248,.07))',
+            border:'1px solid rgba(56,189,248,.28)',
+            borderRadius:24,
+            padding:'2.1rem',
+            backdropFilter:'blur(14px)',
+            boxShadow:'0 18px 38px rgba(0,0,0,.28)'
+          }}>
+            <div style={{
+              display:'inline-flex', alignItems:'center', gap:'.5rem',
+              border:'1px solid rgba(56,189,248,.35)', borderRadius:999, padding:'.35rem .9rem',
+              fontSize:'.72rem', letterSpacing:'.08em', textTransform:'uppercase', color:'#7dd3fc', fontWeight:700,
+              marginBottom:'1rem'
+            }}>
+              3D MEDICAL INTELLIGENCE
+            </div>
+            <h1 style={{
+              fontFamily:"'Poppins',sans-serif",
+              fontSize:'clamp(2rem, 4vw, 3.2rem)',
+              lineHeight:1.08,
+              marginBottom:'.9rem',
+              letterSpacing:'.01em'
+            }}>
+              About <span style={{
+                background:'linear-gradient(135deg, #2dd4bf, #38bdf8)',
+                WebkitBackgroundClip:'text',
+                WebkitTextFillColor:'transparent'
+              }}>Visio3D</span>
+            </h1>
+            <p style={{color:'var(--muted)', fontSize:'.96rem', lineHeight:1.8, maxWidth:640}}>
+              Visio3D converts medical image interpretation into a fast and understandable 3D experience.
+              We combine AI diagnostics, visual storytelling, and clinical workflow support so teams can
+              review scans more clearly and make better decisions.
+            </p>
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))', gap:'.8rem', marginTop:'1.5rem'}}>
+              {[
+                ['12k+', 'Scans Visualized'],
+                ['98.4%', 'AI Accuracy'],
+                ['340ms', 'Avg Inference']
+              ].map(([n,l])=>(
+                <div key={l} style={{
+                  border:'1px solid rgba(45,212,191,.22)',
+                  background:'rgba(45,212,191,.08)',
+                  borderRadius:14,
+                  padding:'.8rem .7rem',
+                  textAlign:'center'
+                }}>
+                  <div style={{fontFamily:"'Poppins',sans-serif", fontWeight:800, fontSize:'1.22rem', color:'#67e8f9'}}>{n}</div>
+                  <div style={{fontSize:'.72rem', color:'var(--muted)', marginTop:'.2rem'}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section style={{marginTop:'1.2rem'}}>
+          <div style={{
+            border:'1px solid rgba(56,189,248,.24)',
+            borderRadius:22,
+            background:'linear-gradient(145deg, rgba(56,189,248,.12), rgba(45,212,191,.08))',
+            padding:'1.6rem',
+            boxShadow:'0 14px 30px rgba(0,0,0,.22)'
+          }}>
+            <h3 style={{fontFamily:"'Poppins',sans-serif", fontSize:'1.35rem', marginBottom:'.7rem'}}>Our Mission</h3>
+            <p style={{fontSize:'.94rem', color:'var(--muted)', lineHeight:1.8, margin:0}}>
+              Our mission is to make advanced medical imaging intelligence accessible, visual, and actionable.
+              Visio3D helps clinicians and diagnostic teams move from static scan review to interactive 3D understanding,
+              reducing ambiguity and accelerating confident decisions for patient care.
+            </p>
+          </div>
+        </section>
+
+        <section style={{marginTop:'1.6rem'}}>
+          <h3 style={{fontFamily:"'Poppins',sans-serif", marginBottom:'1rem'}}>What Makes Visio3D Different</h3>
+          <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))', gap:'1rem'}}>
+            {[
+              ['3D-First Diagnostics', 'Every report is connected to an interactive 3D context for clearer interpretation.'],
+              ['AI + Clinical Flow', 'Model output is designed for practical review with confidence and severity insights.'],
+              ['Trust & Privacy', 'Secure auth flow, protected storage, and architecture designed for healthcare data safety.']
+            ].map(([title, text], idx)=>(
+              <div key={title} style={{
+                border:'1px solid rgba(45,212,191,.2)',
+                borderRadius:16,
+                background:'linear-gradient(160deg, rgba(45,212,191,.08), rgba(56,189,248,.05))',
+                padding:'1.15rem',
+                transform:`translateY(${Math.max(0, 24 - scrollY * 0.05 - idx * 3)}px)`,
+                opacity: scrollY > 120 ? 1 : .82,
+                transition:'transform .28s ease-out, opacity .3s ease-out',
+                boxShadow:'0 10px 22px rgba(0,0,0,.16)'
+              }}>
+                <div style={{fontWeight:700, fontFamily:"'Poppins',sans-serif", marginBottom:'.45rem', color:'#7dd3fc'}}>{title}</div>
+                <p style={{margin:0, fontSize:'.85rem', color:'var(--muted)', lineHeight:1.7}}>{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section style={{marginTop:'1.8rem', paddingBottom:'2.6rem'}}>
+          <div style={{
+            border:'1px solid rgba(45,212,191,.28)',
+            borderRadius:20,
+            background:'linear-gradient(150deg, rgba(45,212,191,.14), rgba(56,189,248,.1))',
+            boxShadow:'0 16px 30px rgba(0,0,0,.22)',
+            padding:'1.25rem',
+            animation:'fadeIn .5s ease'
+          }}>
+            <h3 style={{fontFamily:"'Poppins',sans-serif", marginBottom:'.2rem'}}>Quick Query</h3>
+            <p style={{margin:'0 0 1rem', color:'var(--muted)', fontSize:'.84rem'}}>Have a question about Visio3D? Send a short query and we will respond.</p>
+            <form onSubmit={submitQuery} style={{display:'grid', gap:'.75rem'}}>
+              <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:'.65rem'}}>
+                <input
+                  value={query.name}
+                  onChange={(e)=>updateQuery('name', e.target.value)}
+                  placeholder="Your name"
+                />
+                <input
+                  type="email"
+                  value={query.email}
+                  onChange={(e)=>updateQuery('email', e.target.value)}
+                  placeholder="Email address"
+                />
+              </div>
+              <textarea
+                rows={3}
+                value={query.message}
+                onChange={(e)=>updateQuery('message', e.target.value)}
+                placeholder="Write your query..."
+              />
+              <div style={{display:'flex', justifyContent:'flex-end'}}>
+                <button className="btn btn-primary" type="submit" disabled={savingQuery} style={{padding:'.55rem 1.3rem'}}>{savingQuery ? 'Saving...' : 'Send Query'}</button>
+              </div>
+            </form>
+          </div>
+        </section>
       </div>
     </div>
   )
