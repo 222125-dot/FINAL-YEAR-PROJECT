@@ -1,48 +1,106 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { authAPI } from '../utils/api'
+import api from './api'
+import { supabase } from './supabaseClient'
 
 const AuthContext = createContext(null)
 
+function axiosDetail(err) {
+  const d = err.response?.data?.detail
+  if (typeof d === 'string') return d
+  if (Array.isArray(d)) return d.map(x => (typeof x === 'object' && x?.msg ? x.msg : String(x))).join(' ')
+  if (d != null && typeof d === 'object') return JSON.stringify(d)
+  return err.message || String(err)
+}
+
+async function loadProfile() {
+  const res = await api.get('/auth/me')
+  return res.data
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('v3d_token')
-    const userData = localStorage.getItem('v3d_user')
-    if (token && userData) {
-      try {
-        const user = JSON.parse(userData)
-        setUser(user)
-      } catch (e) {
-        // Invalid data, clear
-        localStorage.removeItem('v3d_token')
-        localStorage.removeItem('v3d_user')
+    let cancelled = false
+
+    async function bootstrap() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session || cancelled) {
+        if (!cancelled) setLoading(false)
+        return
       }
+      try {
+        const profile = await loadProfile()
+        if (!cancelled) setUser(profile)
+      } catch {
+        if (!cancelled) setUser(null)
+      }
+      if (!cancelled) setLoading(false)
     }
-    setLoading(false)
+
+    bootstrap()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session) {
+        setUser(null)
+        setLoading(false)
+        return
+      }
+      try {
+        const profile = await loadProfile()
+        setUser(profile)
+      } catch {
+        setUser(null)
+      }
+      setLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const login = async (username, password) => {
-    const res = await authAPI.login({ username, password })
-    localStorage.setItem('v3d_token', res.data.access_token)
-    localStorage.setItem('v3d_user',  JSON.stringify(res.data.user))
-    setUser(res.data.user)
-    return res.data
+  const login = async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    try {
+      const profile = await loadProfile()
+      setUser(profile)
+      return profile
+    } catch (e) {
+      await supabase.auth.signOut()
+      throw new Error(axiosDetail(e))
+    }
   }
 
-  const signup = async (data) => {
-    const res = await authAPI.signup(data)
-    localStorage.setItem('v3d_token', res.data.access_token)
-    localStorage.setItem('v3d_user',  JSON.stringify(res.data.user))
-    setUser(res.data.user)
-    return res.data
+  const signup = async ({ username, email, password, full_name }) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username, full_name },
+      },
+    })
+    if (error) throw error
+    if (!data.session) {
+      const msg =
+        'Account created. If email confirmation is enabled, check your inbox before signing in.'
+      throw new Error(msg)
+    }
+    try {
+      const profile = await loadProfile()
+      setUser(profile)
+      return profile
+    } catch (e) {
+      await supabase.auth.signOut()
+      throw new Error(axiosDetail(e))
+    }
   }
 
-  const logout = () => {
-    localStorage.removeItem('v3d_token')
-    localStorage.removeItem('v3d_user')
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
   }
 

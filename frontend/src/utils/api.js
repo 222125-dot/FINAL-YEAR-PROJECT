@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { supabase } from './supabaseClient'
 
 // Allow overriding API base URL via Vite env var `VITE_API_URL`.
 // Example: set VITE_API_URL=https://api.example.com in Vercel env.
@@ -8,10 +9,25 @@ const api = axios.create({
   timeout: 60000, // 60s for ML inference
 })
 
-// Auto-attach JWT
-api.interceptors.request.use(cfg => {
-  const token = localStorage.getItem('v3d_token')
-  if (token) cfg.headers.Authorization = `Bearer ${token}`
+function isAuthMeRequest(config) {
+  const url = config?.url ?? ''
+  return typeof url === 'string' && url.includes('auth/me')
+}
+
+async function logoutAndRedirectOn401(err, config) {
+  if (err.response?.status !== 401) return
+  // Let Login / AuthContext handle profile failures so the user sees the real error
+  if (isAuthMeRequest(config)) return
+  await supabase.auth.signOut()
+  window.location.href = '/login'
+}
+
+// Attach Supabase access_token per request
+api.interceptors.request.use(async (cfg) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.access_token) {
+    cfg.headers.Authorization = `Bearer ${session.access_token}`
+  }
   return cfg
 })
 
@@ -22,21 +38,12 @@ api.interceptors.response.use(
     const config = err.config
     // Only retry on network errors or 5xx, not on 4xx client errors
     if (!config || config._retryCount >= 2) {
-      // Auto-logout on 401
-      if (err.response?.status === 401) {
-        localStorage.removeItem('v3d_token')
-        localStorage.removeItem('v3d_user')
-        window.location.href = '/login'
-      }
+      await logoutAndRedirectOn401(err, config)
       return Promise.reject(err)
     }
     const isRetryable = !err.response || (err.response.status >= 500 && err.response.status !== 501)
     if (!isRetryable) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('v3d_token')
-        localStorage.removeItem('v3d_user')
-        window.location.href = '/login'
-      }
+      await logoutAndRedirectOn401(err, config)
       return Promise.reject(err)
     }
     config._retryCount = (config._retryCount || 0) + 1
@@ -50,9 +57,7 @@ export default api
 
 // ── Auth ──────────────────────────────────────────
 export const authAPI = {
-  login:   (data) => api.post('/auth/login',  data),
-  signup:  (data) => api.post('/auth/signup', data),
-  me:      ()     => api.get('/auth/me'),
+  me: () => api.get('/auth/me'),
 }
 
 // ── Analyze ──────────────────────────────────────
@@ -80,4 +85,3 @@ export const queriesAPI = {
   create: (data) => api.post('/queries/', data),
   list:   () => api.get('/queries/'),
 }
-
