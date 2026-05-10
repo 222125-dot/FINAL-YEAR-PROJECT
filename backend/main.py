@@ -57,10 +57,13 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:5174",
         "http://localhost:5175",
+        "https://visio3d.vercel.app",
+        "*",  # Allow all origins as fallback
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    max_age=86400,
 )
 
 # ─── STATIC FILES ─────────────────────────────────────────────────────────────
@@ -97,7 +100,7 @@ app.include_router(queries.router, prefix="/api/queries", tags=["Queries"])
 def root():
     return {
         "message": "✅ Visio3D API running",
-        "docs":    "https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/docs",
+        "docs":    "https://visio3d.vercel.app/api/docs",
         "status":  "ok"
     }
 
