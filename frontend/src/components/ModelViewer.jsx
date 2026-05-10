@@ -11,7 +11,7 @@ export default function ModelViewer({ src, alt = '3D Model', style = {}, showCon
     // model-viewer is a web component — loaded via CDN in index.html
     if (ref.current && src) {
       // If src starts with /, prepend the backend URL
-      const fullSrc = src.startsWith('/') ? `http://localhost:8000${src}` : src
+      const fullSrc = src.startsWith('/') ? `https://modal.com/apps/dot-91809/main/deployed/visio3d-backend${src}` : src
       // Force reload when src changes
       ref.current.src = fullSrc
     }

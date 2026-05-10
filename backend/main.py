@@ -97,7 +97,7 @@ app.include_router(queries.router, prefix="/api/queries", tags=["Queries"])
 def root():
     return {
         "message": "✅ Visio3D API running",
-        "docs":    "http://localhost:8000/docs",
+        "docs":    "https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/docs",
         "status":  "ok"
     }
 
