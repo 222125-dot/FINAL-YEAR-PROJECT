@@ -10,7 +10,8 @@ app = modal.App("visio3d-backend")
 visio3d_secrets = modal.Secret.from_name("visio3d-secrets")
 
 # Create an image with all required dependencies
-image = modal.Image.debian_slim().pip_install_from_requirements("requirements.txt")
+requirements_path = Path(__file__).with_name("requirements.txt")
+image = modal.Image.debian_slim().pip_install_from_requirements(str(requirements_path))
 
 
 @app.function(image=image, secrets=[visio3d_secrets])
