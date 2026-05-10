@@ -1,15 +1,21 @@
 {
   "version": 2,
+  "buildCommand": "cd frontend && npm run build",
   "builds": [
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "frontend/dist",
-        "buildCommand": "cd frontend && npm run build"
+        "distDir": "dist",
+        "buildCommand": "npm run build"
       }
     }
   ],
+  "env": {
+    "VITE_API_URL": "https://modal.com/apps/dot-91809/main/deployed/visio3d-backend",
+    "VITE_SUPABASE_URL": "https://gdjvcbhykfcangnkheqz.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkanZjYmh5a2ZjYW5nbmtoZXF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDA1MzEsImV4cCI6MjA5MzkxNjUzMX0.cxxl-H33LxDvbTnLvYOXCPBFqcji4xLGraoqpUHjif4"
+  },
   "routes": [
     {
       "src": "/api/(.*)",

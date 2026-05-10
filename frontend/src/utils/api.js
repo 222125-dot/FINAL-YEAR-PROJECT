@@ -6,7 +6,7 @@ import { supabase } from './supabaseClient'
 const resolvedBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : ''
 const api = axios.create({
   baseURL: resolvedBase || '/api',
-  timeout: 60000, // 60s for ML inference
+  timeout: 10000, // 10s timeout (reduced from 60s for faster failure)
 })
 
 function isAuthMeRequest(config) {
