@@ -23,7 +23,7 @@ image = (
     # Increase timeout for long-running requests (e.g. YOLO inference)
     timeout=120,
     # Keep one container warm to avoid cold-start delays
-    keep_warm=1,
+    min_containers=1,
 )
 @modal.asgi_app()
 def fastapi_app():
