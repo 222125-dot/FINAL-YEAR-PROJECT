@@ -3,6 +3,8 @@ import { supabase } from './supabaseClient'
 
 // Allow overriding API base URL via Vite env var `VITE_API_URL`.
 // Example: set VITE_API_URL=https://api.example.com in Vercel env.
+const apiBase = 'https://dot-91809--visio3d-backend-run-fastapi.modal.run/api'
+
 const resolvedBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : ''
 const apiBase = resolvedBase
   ? (resolvedBase.endsWith('/api') ? resolvedBase : `${resolvedBase}/api`)
@@ -11,6 +13,8 @@ const api = axios.create({
   baseURL: apiBase,
   timeout: 10000, // 10s timeout (reduced from 60s for faster failure)
 })
+
+
 
 function isAuthMeRequest(config) {
   const url = config?.url ?? ''
@@ -60,7 +64,7 @@ export default api
 
 // ── Auth ──────────────────────────────────────────
 export const authAPI = {
-  me: (config = {}) => api.get('/auth/me', config),
+  me: () => api.get('/auth/me'),
 }
 
 // ── Analyze ──────────────────────────────────────
@@ -88,3 +92,5 @@ export const queriesAPI = {
   create: (data) => api.post('/queries/', data),
   list:   () => api.get('/queries/'),
 }
+
+// src/utils/api.js
