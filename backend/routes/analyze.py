@@ -326,7 +326,7 @@ async def analyze(
         detections=detections, total_found=len(detections),
         overall_severity=overall, confidence=conf,
         analysis_time=elapsed,
-        model_3d_url=f"http://localhost:8000/static/output/{glb}" if glb else "",
+        model_3d_url=f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/output/{glb}" if glb else "",
         recommendations=recs,
     )
     db.add(report); db.commit()
@@ -338,8 +338,8 @@ async def analyze(
         "detections": detections, "total_found": len(detections),
         "overall_severity": overall, "confidence": conf,
         "analysis_time": elapsed,
-        "model_3d_url": f"http://localhost:8000/static/output/{glb}" if glb else None,
-        "organ_base_url": f"http://localhost:8000/static/{base_file}",
+        "model_3d_url": f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/output/{glb}" if glb else None,
+        "organ_base_url": f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/{base_file}",
         "recommendations": recs,
     }
     if tumor_size_pct is not None:

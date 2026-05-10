@@ -16,12 +16,12 @@ export default function Login() {
 
   const doLogin = async () => {
     setErr('')
-    if (!form.username.trim()) { setErr('Username is required'); return }
-    if (!form.password)        { setErr('Password is required'); return }
+    if (!form.email.trim() || !form.email.includes('@')) { setErr('Valid email is required'); return }
+    if (!form.password) { setErr('Password is required'); return }
     setBusy(true)
     try {
-      await login(form.username.trim(), form.password)
-      toast('Welcome back! 👋')
+      await login(form.email.trim().toLowerCase(), form.password)
+      toast('Welcome back!')
       navigate('/')
     } catch (e) {
       const msg = e.response?.data?.detail || e.message || 'Login failed'
@@ -33,7 +33,12 @@ export default function Login() {
     setErr('')
     if (!form.full_name.trim()) { setErr('Full name is required'); return }
     if (!form.username.trim())  { setErr('Username is required'); return }
-    if (form.username.trim().length < 3) { setErr('Username must be at least 3 characters'); return }
+    const u = form.username.trim()
+    if (!/^[a-zA-Z0-9_.-]+$/.test(u)) {
+      setErr('Username can only contain letters, numbers, dots, hyphens and underscores'); return
+    }
+    if (u.length < 3) { setErr('Username must be at least 3 characters'); return }
+    if (u.length > 30) { setErr('Username too long (max 30 characters)'); return }
     if (!form.email.trim() || !form.email.includes('@')) { setErr('Valid email is required'); return }
     if (!form.password || form.password.length < 4) { setErr('Password must be at least 4 characters'); return }
     if (!/[A-Za-z]/.test(form.password) || !/[0-9]/.test(form.password)) { setErr('Password must contain both letters and numbers'); return }
@@ -45,7 +50,7 @@ export default function Login() {
         password:  form.password,
         full_name: form.full_name.trim(),
       })
-      toast('Account created! Welcome to Visio3D 🎉')
+      toast('Account created! Welcome to Visio3D.')
       navigate('/')
     } catch (e) {
       const msg = e.response?.data?.detail || e.message || 'Signup failed'
@@ -102,10 +107,10 @@ export default function Login() {
         {tab==='login' ? (
           <div className="fade-in">
             <div className="form-group">
-              <label>Username</label>
-              <input value={form.username} onChange={e=>set('username',e.target.value)}
-                placeholder="your_username" onKeyDown={e=>e.key==='Enter'&&doLogin()} autoFocus
-                aria-label="Username" aria-required="true" autoComplete="username"/>
+              <label>Email</label>
+              <input type="email" value={form.email} onChange={e=>set('email',e.target.value)}
+                placeholder="doctor@hospital.com" onKeyDown={e=>e.key==='Enter'&&doLogin()} autoFocus
+                aria-label="Email" aria-required="true" autoComplete="email"/>
             </div>
             <div className="form-group">
               <label>Password</label>

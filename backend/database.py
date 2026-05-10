@@ -1,14 +1,13 @@
 """
-database.py — PostgreSQL setup with SQLAlchemy
-All tables auto-created on first run.
+database.py — PostgreSQL / SQLite with SQLAlchemy.
+SQLite: tables created on startup. Managed Postgres (Supabase): use migrations.
 """
 
 from sqlalchemy import (
     create_engine, Column, String, Float, Integer,
-    DateTime, Text, Boolean, JSON
+    DateTime, Text, JSON, Uuid,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
-from sqlalchemy.sql import func
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -17,10 +16,14 @@ load_dotenv()
 
 # ─── DATABASE URL ──────────────────────────────────────────────────────────
 # Format: postgresql://user:password@host:port/dbname or sqlite:///path/to/db.db
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///./visio3d.db"
-)
+_RAW_DB_URL = os.getenv("DATABASE_URL", "").strip()
+if _RAW_DB_URL and "://" not in _RAW_DB_URL:
+    raise ValueError(
+        "DATABASE_URL must be a full connection URI (not just the hostname). "
+        "In Supabase: Project Settings -> Database -> copy 'URI' (Session pooler or Direct). "
+        "Example shape: postgresql://postgres.[ref]:[password]@[host].pooler.supabase.com:6543/postgres"
+    )
+DATABASE_URL = _RAW_DB_URL or "sqlite:///./visio3d.db"
 
 # ─── ENGINE ───────────────────────────────────────────────────────────────
 if DATABASE_URL.startswith("sqlite"):
@@ -47,12 +50,13 @@ Base = declarative_base()
 # ═══════════════════════════════════════════
 
 class User(Base):
+    """Profile row linked to auth.users.id (Supabase Auth)."""
+
     __tablename__ = "users"
 
-    id         = Column(Integer, primary_key=True, index=True)
+    id         = Column(Uuid(as_uuid=True), primary_key=True)
     username   = Column(String(80),  unique=True, nullable=False, index=True)
     email      = Column(String(120), unique=True, nullable=False, index=True)
-    password   = Column(String(200), nullable=False)
     full_name  = Column(String(120), default="")
     plan       = Column(String(20),  default="free")
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -90,9 +94,12 @@ class QueryMessage(Base):
 
 # ─── CREATE ALL TABLES ────────────────────────────────────────────────────
 def init_db():
-    """Call this once at startup to create all tables."""
-    Base.metadata.create_all(bind=engine)
-    print("✅ PostgreSQL tables created/verified")
+    """Create tables for local SQLite only; managed Postgres uses migrations."""
+    if DATABASE_URL.startswith("sqlite"):
+        Base.metadata.create_all(bind=engine)
+        print("✅ SQLite tables created/verified")
+    else:
+        print("✅ External PostgreSQL — schema managed via migrations (skipped create_all)")
 
 
 # ─── DEPENDENCY ──────────────────────────────────────────────────────────

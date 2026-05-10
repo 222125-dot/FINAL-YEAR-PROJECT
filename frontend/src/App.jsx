@@ -88,14 +88,15 @@ function AppLayout() {
       <Navbar />
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/"         element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/"         element={<Home />} />
           <Route path="/upload"   element={<ProtectedRoute><Upload /></ProtectedRoute>} />
           <Route path="/reports"  element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
           <Route path="/text3d"   element={<ProtectedRoute><TextTo3D /></ProtectedRoute>} />
           <Route path="/compare"  element={<ProtectedRoute><Compare /></ProtectedRoute>} />
-          <Route path="/pricing"  element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
-          <Route path="/about"    element={<ProtectedRoute><About /></ProtectedRoute>} />
+          <Route path="/pricing"  element={<Pricing />} />
+          <Route path="/about"    element={<About />} />
+          <Route path="/login"    element={<Login />} />
           <Route path="*"         element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

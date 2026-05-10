@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "prebuild": "npm rebuild",
+    "build": "npx vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@google/model-viewer": "^3.4.0",
+    "@supabase/supabase-js": "^2.49.1",
     "axios": "^1.7.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

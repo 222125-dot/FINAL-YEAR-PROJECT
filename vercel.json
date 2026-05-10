@@ -2,12 +2,27 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "frontend/dist" }
+      "config": {
+        "distDir": "dist",
+        "buildCommand": "npm run build"
+      }
     }
   ],
+  "env": {
+    "VITE_API_URL": "https://dot-91809--visio3d-backend-run-fastapi.modal.run/api",
+    "VITE_SUPABASE_URL": "https://gdjvcbhykfcangnkheqz.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkanZjYmh5a2ZjYW5nbmtoZXF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDA1MzEsImV4cCI6MjA5MzkxNjUzMX0.cxxl-H33LxDvbTnLvYOXCPBFqcji4xLGraoqpUHjif4"
+  },
   "routes": [
-    { "src": "\\/(.*)", "dest": "\/frontend\/dist\/index.html" }
+    {
+      "src": "/(.*\\.[a-z0-9]+)$",
+      "dest": "/frontend/dist/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/index.html"
+    }
   ]
 }

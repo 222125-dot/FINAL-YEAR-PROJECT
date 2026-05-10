@@ -16,9 +16,9 @@ export default function Navbar() {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
-  const doLogout = () => { 
-    logout()
-    navigate('/login') 
+  const doLogout = async () => {
+    await logout()
+    navigate('/login')
   }
 
   const linkStyle = ({ isActive }) => ({

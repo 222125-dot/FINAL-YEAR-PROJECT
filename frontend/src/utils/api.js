@@ -1,46 +1,57 @@
 import axios from 'axios'
+import { supabase } from './supabaseClient'
 
-// Allow overriding API base URL via Vite env var `VITE_API_URL`.
-// Example: set VITE_API_URL=https://api.example.com in Vercel env.
-const resolvedBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : ''
+// API base URL — hardcoded to Modal backend
+// To switch back to env var later, replace this line with:
+// const apiBase = import.meta.env.VITE_API_URL
+//   ? (import.meta.env.VITE_API_URL.replace(/\/$/, '').endsWith('/api')
+//       ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
+//       : `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`)
+//   : '/api'
+const apiBase = 'https://dot-91809--visio3d-backend-run-fastapi.modal.run/api'
+
 const api = axios.create({
-  baseURL: resolvedBase || '/api',
-  timeout: 60000, // 60s for ML inference
+  baseURL: apiBase,
+  timeout: 10000,
 })
 
-// Auto-attach JWT
-api.interceptors.request.use(cfg => {
-  const token = localStorage.getItem('v3d_token')
-  if (token) cfg.headers.Authorization = `Bearer ${token}`
+function isAuthMeRequest(config) {
+  const url = config?.url ?? ''
+  return typeof url === 'string' && url.includes('auth/me')
+}
+
+async function logoutAndRedirectOn401(err, config) {
+  if (err.response?.status !== 401) return
+  if (isAuthMeRequest(config)) return
+  await supabase.auth.signOut()
+  window.location.href = '/login'
+}
+
+// Attach Supabase access_token per request
+api.interceptors.request.use(async (cfg) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.access_token) {
+    cfg.headers.Authorization = `Bearer ${session.access_token}`
+  }
   return cfg
 })
 
-// RELIABILITY: Auto-retry on network failure (max 2 retries with exponential backoff)
+// Auto-retry on network failure (max 2 retries with exponential backoff)
 api.interceptors.response.use(
   res => res,
   async err => {
     const config = err.config
-    // Only retry on network errors or 5xx, not on 4xx client errors
     if (!config || config._retryCount >= 2) {
-      // Auto-logout on 401
-      if (err.response?.status === 401) {
-        localStorage.removeItem('v3d_token')
-        localStorage.removeItem('v3d_user')
-        window.location.href = '/login'
-      }
+      await logoutAndRedirectOn401(err, config)
       return Promise.reject(err)
     }
     const isRetryable = !err.response || (err.response.status >= 500 && err.response.status !== 501)
     if (!isRetryable) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('v3d_token')
-        localStorage.removeItem('v3d_user')
-        window.location.href = '/login'
-      }
+      await logoutAndRedirectOn401(err, config)
       return Promise.reject(err)
     }
     config._retryCount = (config._retryCount || 0) + 1
-    const delay = config._retryCount * 1000 // 1s, 2s
+    const delay = config._retryCount * 1000
     await new Promise(r => setTimeout(r, delay))
     return api(config)
   }
@@ -50,14 +61,12 @@ export default api
 
 // ── Auth ──────────────────────────────────────────
 export const authAPI = {
-  login:   (data) => api.post('/auth/login',  data),
-  signup:  (data) => api.post('/auth/signup', data),
-  me:      ()     => api.get('/auth/me'),
+  me: () => api.get('auth/me'),
 }
 
 // ── Analyze ──────────────────────────────────────
 export const analyzeAPI = {
-  scan: (formData) => api.post('/analyze', formData, {
+  scan: (formData) => api.post('analyze', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     timeout: 120000,
   }),
@@ -65,19 +74,18 @@ export const analyzeAPI = {
 
 // ── Reports ──────────────────────────────────────
 export const reportsAPI = {
-  list:   ()   => api.get('/reports/'),
-  get:    (id) => api.get(`/reports/${id}`),
-  delete: (id) => api.delete(`/reports/${id}`),
+  list:   ()   => api.get('reports/'),
+  get:    (id) => api.get(`reports/${id}`),
+  delete: (id) => api.delete(`reports/${id}`),
 }
 
 // ── Text to 3D ────────────────────────────────────
 export const text3dAPI = {
-  generate: (data) => api.post('/text3d/generate', data),
+  generate: (data) => api.post('text3d/generate', data),
 }
 
 // ── Queries ─────────────────────────────────────
 export const queriesAPI = {
-  create: (data) => api.post('/queries/', data),
-  list:   () => api.get('/queries/'),
+  create: (data) => api.post('queries/', data),
+  list:   () => api.get('queries/'),
 }
-
