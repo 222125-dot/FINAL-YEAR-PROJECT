@@ -113,8 +113,9 @@ def generate(
     if not glb:
         raise HTTPException(500, "No matching 3D model found")
     
+    base_url = f"{request.url.scheme}://{request.url.netloc}"
     return {
-        "model_url": str(request.url_for("static", path=f"output/{glb}")),
+        "model_url": f"{base_url}/static/output/{glb}",
         "description": model_data["description"],
         "organ_type": model_data["organ_type"],
         "anomalies": model_data["anomalies"],

@@ -20,8 +20,13 @@ async function loadProfile() {
     clearTimeout(timeoutId)
     return res.data
   } catch (err) {
-    // Don't throw - just return null so page still loads
-    return null
+    // Only return null for specific auth errors (401, 403, network issues)
+    // Avoid logging out on other errors like 500
+    if (err.response?.status === 401 || err.response?.status === 403 || err.code === 'ECONNABORTED') {
+      return null
+    }
+    // For other errors, re-throw so page can handle it
+    throw err
   }
 }
 

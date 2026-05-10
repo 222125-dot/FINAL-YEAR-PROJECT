@@ -320,9 +320,10 @@ async def analyze(
     recs    = build_recs(detections, overall, organ, tumor_size_pct)
     scan_id = uuid.uuid4().hex[:10].upper()
 
-    model_url = str(request.url_for("static", path=f"output/{glb}")) if glb else ""
+    base_url = f"{request.url.scheme}://{request.url.netloc}"
+    model_url = f"{base_url}/static/output/{glb}" if glb else ""
     base_file = "kidney.glb" if organ.lower() != "brain" else "brain.glb"
-    organ_base_url = str(request.url_for("static", path=base_file))
+    organ_base_url = f"{base_url}/static/{base_file}"
 
     report = Report(
         scan_id=scan_id, username=current_user.username,
