@@ -16,7 +16,7 @@ async function loadProfile() {
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
-    const res = await api.get('/auth/me', { signal: controller.signal })
+    const res = await api.get('auth/me', { signal: controller.signal })
     clearTimeout(timeoutId)
     return res.data
   } catch (err) {
