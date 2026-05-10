@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { authAPI } from './api'
+import api from './api'
 import { supabase } from './supabaseClient'
 
 const AuthContext = createContext(null)
@@ -16,7 +16,7 @@ async function loadProfile() {
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
-    const res = await authAPI.me({ signal: controller.signal })
+    const res = await api.get('/auth/me', { signal: controller.signal })
     clearTimeout(timeoutId)
     return res.data
   } catch (err) {
