@@ -4,8 +4,11 @@ import { supabase } from './supabaseClient'
 // Allow overriding API base URL via Vite env var `VITE_API_URL`.
 // Example: set VITE_API_URL=https://api.example.com in Vercel env.
 const resolvedBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : ''
+const apiBase = resolvedBase
+  ? (resolvedBase.endsWith('/api') ? resolvedBase : `${resolvedBase}/api`)
+  : '/api'
 const api = axios.create({
-  baseURL: resolvedBase || '/api',
+  baseURL: apiBase,
   timeout: 10000, // 10s timeout (reduced from 60s for faster failure)
 })
 
