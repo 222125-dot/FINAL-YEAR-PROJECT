@@ -61,12 +61,12 @@ export default api
 
 // ── Auth ──────────────────────────────────────────
 export const authAPI = {
-  me: () => api.get('/auth/me'),
+  me: () => api.get('auth/me'),
 }
 
 // ── Analyze ──────────────────────────────────────
 export const analyzeAPI = {
-  scan: (formData) => api.post('/analyze', formData, {
+  scan: (formData) => api.post('analyze', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     timeout: 120000,
   }),
@@ -74,18 +74,18 @@ export const analyzeAPI = {
 
 // ── Reports ──────────────────────────────────────
 export const reportsAPI = {
-  list:   ()   => api.get('/reports/'),
-  get:    (id) => api.get(`/reports/${id}`),
-  delete: (id) => api.delete(`/reports/${id}`),
+  list:   ()   => api.get('reports/'),
+  get:    (id) => api.get(`reports/${id}`),
+  delete: (id) => api.delete(`reports/${id}`),
 }
 
 // ── Text to 3D ────────────────────────────────────
 export const text3dAPI = {
-  generate: (data) => api.post('/text3d/generate', data),
+  generate: (data) => api.post('text3d/generate', data),
 }
 
 // ── Queries ─────────────────────────────────────
 export const queriesAPI = {
-  create: (data) => api.post('/queries/', data),
-  list:   () => api.get('/queries/'),
+  create: (data) => api.post('queries/', data),
+  list:   () => api.get('queries/'),
 }
