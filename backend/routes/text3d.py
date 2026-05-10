@@ -2,7 +2,7 @@
 Text to 3D — Pre-loaded models based on keywords
 POST /api/text3d/generate
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 import os, uuid, shutil
 from sqlalchemy.orm import Session
@@ -98,7 +98,12 @@ def copy_model_to_output(model_data):
 
 
 @router.post("/generate")
-def generate(req: T3DRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def generate(
+    req: T3DRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     if not req.prompt.strip():
         raise HTTPException(400, "Prompt is empty")
     
@@ -109,7 +114,7 @@ def generate(req: T3DRequest, current_user: User = Depends(get_current_user), db
         raise HTTPException(500, "No matching 3D model found")
     
     return {
-        "model_url": f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/output/{glb}",
+        "model_url": str(request.url_for("static", path=f"output/{glb}")),
         "description": model_data["description"],
         "organ_type": model_data["organ_type"],
         "anomalies": model_data["anomalies"],

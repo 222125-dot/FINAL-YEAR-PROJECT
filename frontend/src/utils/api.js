@@ -8,7 +8,7 @@ import { supabase } from './supabaseClient'
 //       ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
 //       : `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`)
 //   : '/api'
-const apiBase = 'https://dot-91809--visio3d-backend-run-fastapi.modal.run/api'
+export const apiBase = 'https://dot-91809--visio3d-backend-run-fastapi.modal.run/api'
 
 const api = axios.create({
   baseURL: apiBase,

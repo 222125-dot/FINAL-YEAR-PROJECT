@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { apiBase } from '../utils/api'
 
 /**
  * ModelViewer — wraps Google's <model-viewer> web component
@@ -6,16 +7,16 @@ import React, { useEffect, useRef } from 'react'
  */
 export default function ModelViewer({ src, alt = '3D Model', style = {}, showControls = true }) {
   const ref = useRef()
+  const backendOrigin = apiBase.replace(/\/api$/, '')
+  const resolvedSrc = src?.startsWith('/static/') ? `${backendOrigin}${src}` : src
 
   useEffect(() => {
     // model-viewer is a web component — loaded via CDN in index.html
-    if (ref.current && src) {
-      // If src starts with /, prepend the backend URL
-      const fullSrc = src.startsWith('/') ? `https://modal.com/apps/dot-91809/main/deployed/visio3d-backend${src}` : src
+    if (ref.current && resolvedSrc) {
       // Force reload when src changes
-      ref.current.src = fullSrc
+      ref.current.src = resolvedSrc
     }
-  }, [src])
+  }, [resolvedSrc])
 
   if (!src) {
     return (
@@ -33,7 +34,7 @@ export default function ModelViewer({ src, alt = '3D Model', style = {}, showCon
   return (
     <model-viewer
       ref={ref}
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       auto-rotate
       camera-controls

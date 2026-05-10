@@ -3,7 +3,7 @@ Analyze Route — PostgreSQL version
 POST /api/analyze
 """
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 import os, uuid, shutil, time
 from datetime import datetime
 import numpy as np
@@ -273,6 +273,7 @@ def build_recs(detections, severity, organ="Kidney", tumor_size_pct=None):
 
 @router.post("/analyze")
 async def analyze(
+    request:      Request,
     file:         UploadFile = File(...),
     organ:        str        = Form("Kidney"),
     patient_id:   str        = Form(""),
@@ -319,6 +320,10 @@ async def analyze(
     recs    = build_recs(detections, overall, organ, tumor_size_pct)
     scan_id = uuid.uuid4().hex[:10].upper()
 
+    model_url = str(request.url_for("static", path=f"output/{glb}")) if glb else ""
+    base_file = "kidney.glb" if organ.lower() != "brain" else "brain.glb"
+    organ_base_url = str(request.url_for("static", path=base_file))
+
     report = Report(
         scan_id=scan_id, username=current_user.username,
         organ=organ, patient_id=patient_id,
@@ -326,11 +331,10 @@ async def analyze(
         detections=detections, total_found=len(detections),
         overall_severity=overall, confidence=conf,
         analysis_time=elapsed,
-        model_3d_url=f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/output/{glb}" if glb else "",
+        model_3d_url=model_url,
         recommendations=recs,
     )
     db.add(report); db.commit()
-    base_file = "kidney.glb" if organ.lower() != "brain" else "brain.glb"
 
     resp = {
         "scan_id": scan_id, "organ": organ, "patient_id": patient_id,
@@ -338,8 +342,8 @@ async def analyze(
         "detections": detections, "total_found": len(detections),
         "overall_severity": overall, "confidence": conf,
         "analysis_time": elapsed,
-        "model_3d_url": f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/output/{glb}" if glb else None,
-        "organ_base_url": f"https://modal.com/apps/dot-91809/main/deployed/visio3d-backend/static/{base_file}",
+        "model_3d_url": model_url or None,
+        "organ_base_url": organ_base_url,
         "recommendations": recs,
     }
     if tumor_size_pct is not None:

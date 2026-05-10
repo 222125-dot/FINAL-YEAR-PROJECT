@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../utils/AuthContext'
 import { useToast } from '../utils/ToastContext'
 import { queriesAPI } from '../utils/api'
+import ModelViewer from '../components/ModelViewer'
 
 export function Home() {
   const navigate = useNavigate()
@@ -144,24 +145,16 @@ export function Home() {
               animation:'pulseGlow 4s ease-in-out infinite',
               pointerEvents:'none',
             }}/>
-            <model-viewer
+            <ModelViewer
               src="/static/human_base_mesh_male.glb"
               alt="3D Human Body"
-              auto-rotate
-              camera-controls
-              shadow-intensity="0.8"
-              environment-image="neutral"
-              exposure="1.3"
-              camera-orbit="0deg 75deg 2.8m"
               style={{
                 width:'100%', height:'100%', minHeight:560,
                 background:'transparent',
                 '--poster-color':'transparent',
                 filter:'drop-shadow(0 0 25px rgba(0,255,136,.25))',
               }}
-            >
-              <div slot="progress-bar" style={{display:'none'}}></div>
-            </model-viewer>
+            />
             {/* overlay badges */}
             <div style={{
               position:'absolute',bottom:'1rem',left:'1rem',
