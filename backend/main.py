@@ -49,6 +49,49 @@ app.add_middleware(
 # ─── PERFORMANCE: GZip compression ────────────────────────────────────────────
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
+# ─── FIX Modal CORS: Explicit header passthrough for Modal proxy ───────────────
+# Modal's HTTP proxy sometimes doesn't forward CORS headers properly.
+# This middleware ensures headers make it through.
+@app.middleware("http")
+async def ensure_cors_headers(request: Request, call_next):
+    if request.method == "OPTIONS":
+        origin = request.headers.get("origin")
+        allowed_origins = [
+            "https://visio3d.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ]
+        is_allowed = origin in allowed_origins or (origin and ".vercel.app" in origin)
+        
+        return JSONResponse(
+            content={},
+            status_code=204,
+            headers={
+                "Access-Control-Allow-Origin": origin or "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "86400",
+            } if is_allowed else {}
+        )
+    
+    response = await call_next(request)
+    origin = request.headers.get("origin")
+    allowed_origins = [
+        "https://visio3d.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    is_allowed = origin in allowed_origins or (origin and ".vercel.app" in origin)
+    
+    if is_allowed:
+        response.headers["Access-Control-Allow-Origin"] = origin or "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    
+    return response
+
 # ─── SECURITY: Security headers middleware ────────────────────────────────────
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
