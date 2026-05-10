@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import api from './api'
+import { authAPI } from './api'
 import { supabase } from './supabaseClient'
 
 const AuthContext = createContext(null)
@@ -13,8 +13,16 @@ function axiosDetail(err) {
 }
 
 async function loadProfile() {
-  const res = await api.get('/auth/me')
-  return res.data
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
+    const res = await authAPI.me({ signal: controller.signal })
+    clearTimeout(timeoutId)
+    return res.data
+  } catch (err) {
+    // Don't throw - just return null so page still loads
+    return null
+  }
 }
 
 export function AuthProvider({ children }) {
@@ -25,9 +33,29 @@ export function AuthProvider({ children }) {
     let cancelled = false
 
     async function bootstrap() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session || cancelled) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session || cancelled) {
+          setLoading(false) // Don't wait for API if no session
+          return
+        }
+        const profile = await loadProfile()
+        if (!cancelled) setUser(profile)
+      } catch {
+        if (!cancelled) setUser(null)
+      } finally {
         if (!cancelled) setLoading(false)
+      }
+    }
+
+    bootstrap()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session) {
+        if (!cancelled) {
+          setUser(null)
+          setLoading(false)
+        }
         return
       }
       try {
@@ -35,25 +63,9 @@ export function AuthProvider({ children }) {
         if (!cancelled) setUser(profile)
       } catch {
         if (!cancelled) setUser(null)
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      if (!cancelled) setLoading(false)
-    }
-
-    bootstrap()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!session) {
-        setUser(null)
-        setLoading(false)
-        return
-      }
-      try {
-        const profile = await loadProfile()
-        setUser(profile)
-      } catch {
-        setUser(null)
-      }
-      setLoading(false)
     })
 
     return () => {

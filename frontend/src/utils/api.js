@@ -60,7 +60,7 @@ export default api
 
 // ── Auth ──────────────────────────────────────────
 export const authAPI = {
-  me: () => api.get('/auth/me'),
+  me: (config = {}) => api.get('/auth/me', config),
 }
 
 // ── Analyze ──────────────────────────────────────
