@@ -49,10 +49,42 @@ app.add_middleware(
 # ─── PERFORMANCE: GZip compression ────────────────────────────────────────────
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
+# ─── CORS HEADERS: Ensure CORS headers on all responses ──────────────────────
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    origin = request.headers.get("origin")
+    is_allowed = (
+        origin == "https://visio3d.vercel.app" or
+        (origin and origin.endswith(".vercel.app")) or
+        origin in ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://localhost:5175"]
+    )
+    
+    if request.method == "OPTIONS":
+        if is_allowed:
+            return JSONResponse(
+                content={},
+                status_code=200,
+                headers={
+                    "Access-Control-Allow-Origin": origin,
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+                    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                    "Access-Control-Allow-Credentials": "true",
+                    "Access-Control-Max-Age": "86400",
+                }
+            )
+        return JSONResponse(content={}, status_code=403)
+    
+    response = await call_next(request)
+    
+    if is_allowed:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    
+    return response
+
 # ─── SECURITY: Security headers middleware ────────────────────────────────────
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
-    # Skip security headers for OPTIONS preflight — CORS middleware handles those
     if request.method == "OPTIONS":
         return await call_next(request)
     response = await call_next(request)
