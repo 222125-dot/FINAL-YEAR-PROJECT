@@ -145,7 +145,7 @@ export function Home() {
               pointerEvents:'none',
             }}/>
             <model-viewer
-              src="/static/human_base_mesh_male.glb"
+              src="/human_base_mesh_male.glb"
               alt="3D Human Body"
               auto-rotate
               camera-controls
