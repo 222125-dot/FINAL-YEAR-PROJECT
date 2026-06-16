@@ -7,7 +7,6 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, R
 import os, uuid, shutil, time
 from datetime import datetime
 import numpy as np
-import cv2
 import trimesh
 from sqlalchemy.orm import Session
 
@@ -77,6 +76,7 @@ ORGANS_CONFIG = {
 
 def validate_organ_image(image_path, organ: str = "Kidney"):
     """Validate if the image contains the CORRECT organ anatomy (BALANCED validation)"""
+    import cv2
     model = get_yolo(organ)
     if not model:
         return False
@@ -107,6 +107,7 @@ def validate_organ_image(image_path, organ: str = "Kidney"):
 
 
 def run_detection(image_path, organ: str = "Kidney"):
+    import cv2
     model = get_yolo(organ)
     img = cv2.imread(image_path)
     if img is None:
